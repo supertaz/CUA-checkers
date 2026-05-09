@@ -31,6 +31,12 @@
 - [♻] Phase 11: iterate on findings — perpetual until specs.json fully green
 - [⏸] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — blocked by Phase 4
 - [x] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
+- [ ] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — blocked by Phase 4
+- [ ] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — blocked by Phase 4
+- [ ] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — blocked by Phase 4
+- [ ] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — blocked by Phase 4
+- [ ] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — blocked by Phase 4
+- [ ] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — blocked by Phase 4
 
 ## Active workers
 

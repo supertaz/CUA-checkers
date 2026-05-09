@@ -190,6 +190,104 @@
       "status": "done",
       "severity": "note",
       "evidence": "next bumped 15.1.6 → 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated. Advisories addressed: GHSA-3h52-269p-cp9r (low, dev-server info exposure, fixed ≥15.2.2), GHSA-67rr-84xm-4c7r (high, cache poisoning DoS, fixed ≥15.1.8), GHSA-9qr9-h5gf-34mp (critical, RCE in React flight protocol, fixed ≥15.1.9), GHSA-w37m-7fhw-fmv9 (moderate, server actions source exposure, fixed ≥15.1.9), GHSA-mwv6-3258-q52c (high, DoS, fixed ≥15.1.10), GHSA-h25m-26qc-wcjf (high, HTTP deserialization DoS, fixed ≥15.1.12), GHSA-f82v-jwr5-mffw (critical, auth bypass in middleware, fixed ≥15.2.3), GHSA-ggv3-7p47-pfv8 (moderate, HTTP request smuggling, fixed ≥15.5.13), GHSA-3x4c-7xq6-9pq8 (moderate, image disk cache exhaustion, fixed ≥15.5.14), GHSA-q4gf-8mx6-v5v3 (high, DoS with server components, fixed ≥15.5.15). Remaining: GHSA-g5qg-72qw-gw5v and GHSA-xv57-4mr9-wg8v already cleared by 15.5.x range; postcss XSS (GHSA-qx2v-qp2m-jg93) only fixable via Next 9.x downgrade — deferred as not applicable. npm test: 108 tests, 100% coverage."
+    },
+    {
+      "id": "F-RVW-c98f5ca-1",
+      "title": "server.listen Promise must reject on EADDRINUSE/etc; currently single-listener resolve hangs forever on port-bind failure",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "Test that createApp({ port: occupiedPort }) rejects with the underlying error rather than hanging."
+    },
+    {
+      "id": "F-RVW-c98f5ca-2",
+      "title": "/ws upgrade lacks Origin allowlist (CSWSH risk: any cross-site browser context can claim red role on dev server)",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "Test that an upgrade with a disallowed Origin header is rejected with 403 + socket.destroy."
+    },
+    {
+      "id": "F-RVW-c98f5ca-3",
+      "title": "CLI bootstrap missing .catch on createApp and SIGTERM/SIGINT graceful shutdown for wss + server",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "SIGTERM closes the WebSocketServer and HTTP server before exit; createApp errors propagate to a non-zero exit."
+    },
+    {
+      "id": "F-RVW-c98f5ca-4",
+      "title": "WebSocket payload not size-bounded (default ws maxPayload = 100 MiB); no rate limit on reset/undo control messages",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "WebSocketServer constructed with maxPayload ≤ 8 KiB; per-socket token bucket gates reset/undo (e.g. 1 op / 2 s); test asserting an oversize frame is rejected."
+    },
+    {
+      "id": "F-RVW-c98f5ca-5",
+      "title": "wsHandler/server do not validate query.game and query.as: array values silently coerce, unknown 'as' values fall through to auto-assign",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "Tests for ?game=a&game=b (array), bad-char gameIds, ?as=Red (case), ?as=x (invalid). Expect rejection or normalized first-value behavior with explicit error frame."
+    },
+    {
+      "id": "F-RVW-c98f5ca-6",
+      "title": "No per-game seq or requestId echo on move broadcasts; clients cannot correlate their move attempt with the resulting state frame",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence_required": "Each broadcast includes a monotonic seq; success/error replies echo a client-supplied requestId; tests assert ordering."
+    },
+    {
+      "id": "F-RVW-c98f5ca-7",
+      "title": "Redundant ensureGame in handleSocket; closure-captures role at join time so future store-layer idempotency fixes won't propagate",
+      "status": "todo",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-c98f5ca-8",
+      "title": "Joiner receives presence twice (embedded in hello.state.presence and as standalone broadcast)",
+      "status": "todo",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-c98f5ca-9",
+      "title": "wsHandler test coverage missing for invalid query.as values (empty, whitespace, 'RED', 'x', null)",
+      "status": "todo",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-c98f5ca-10",
+      "title": "vitest.config.js exclude '../server.js' is dead config; coverage include glob 'src/**' never matches it",
+      "status": "todo",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-c98f5ca-11",
+      "title": "Phase-6 ws integration tests must cover real-network edges: backpressure (ws.bufferedAmount), half-open (ping/pong), slow consumer",
+      "status": "todo",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-c98f5ca-12",
+      "title": "Confirmed: c98f5ca does not regress F-RVW-9d6491e-2 (joinSocket idempotency); handler invokes joinSocket once per ws lifecycle",
+      "status": "done",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "evidence": "wsHandler.js calls joinSocket(gameId, ws, wanted) exactly once at line 24; no reconnect/promotion path triggers a second call."
+    },
+    {
+      "id": "F-RVW-c98f5ca-13",
+      "title": "CLI entry guard (process.argv[1] === new URL(import.meta.url).pathname) breaks under symlinks; consider es-main pattern",
+      "status": "todo",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
     }
   ],
   "findings_log": [
@@ -246,6 +344,123 @@
       "remaining_moderate_notes": "postcss XSS (GHSA-qx2v-qp2m-jg93) fix requires Next 9.x major downgrade — not applicable. next moderate badge is an npm grouping artifact from the postcss transitive dep.",
       "npm_test": "108 tests, 100% coverage, all passing",
       "spec": "F-RVW-9d6491e-4 → done"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-1",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "server.js:32-34",
+      "problem": "server.listen Promise resolves only on 'listening'; no 'error' listener — port-bind failure (EADDRINUSE) hangs createApp() forever and never rejects.",
+      "fix": "server.once('error', reject); server.once('listening', resolve); propagate to caller.",
+      "resolution": "new-spec F-RVW-c98f5ca-1 + Phase 14"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-2",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "server.js:21-30",
+      "problem": "Upgrade handler does not validate Origin; CSWSH lets any cross-site browser tab claim red role on a developer's running dev server.",
+      "fix": "Validate req.headers.origin against ALLOWED_ORIGINS env (default localhost:PORT in dev). Reject disallowed upgrades with 403 + socket.destroy.",
+      "resolution": "new-spec F-RVW-c98f5ca-2 + Phase 15"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-3",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "server.js:39-45",
+      "problem": "CLI bootstrap has no .catch on createApp(...) and no SIGTERM/SIGINT shutdown handler; production rolling restart leaks sockets and createApp errors are swallowed/opaque.",
+      "fix": "Add .catch(err => { console.error(err); process.exit(1); }) and signal handlers that wss.close() then server.close() with a drain timeout.",
+      "resolution": "new-spec F-RVW-c98f5ca-3 + Phase 16"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-4",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js:30-33 + server.js:19",
+      "problem": "ws default maxPayload is 100 MiB; JSON.parse runs on unbounded raw frames. No rate limit on reset/undo lets red/black flood broadcasts to all peers.",
+      "fix": "WebSocketServer({ noServer: true, maxPayload: 8 * 1024 }); per-socket token bucket on control messages.",
+      "resolution": "new-spec F-RVW-c98f5ca-4 + Phase 17"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-5",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js:21-23 + server.js:22",
+      "problem": "?game=a&game=b yields query.game = ['a','b']; String(['a','b']) → 'a,b' silently coerces. Unknown query.as values fall through to auto-assign in joinSocket, contradicting the F-013 ?as=red|black|observer contract.",
+      "fix": "Reject array query params (or coerce to first value); restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate query.as against {red, black, observer, ''}.",
+      "resolution": "new-spec F-RVW-c98f5ca-5 + Phase 18"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-6",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js:39-46",
+      "problem": "Move broadcast carries no per-game seq and no echoed requestId; clients cannot correlate their move attempt with the resulting state frame, complicating retries and concurrent observer-driven undo races.",
+      "fix": "Maintain monotonic seq per game; include seq on every broadcast; echo client-supplied requestId on success/error reply.",
+      "resolution": "new-spec F-RVW-c98f5ca-6 + Phase 19"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-7",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js:24-25",
+      "problem": "Redundant ensureGame after joinSocket; closure-captured role becomes stale if store-layer idempotency fixes re-key sockets.",
+      "fix": "Read role lazily from g.rolesByWs.get(ws) per message; drop redundant ensureGame.",
+      "resolution": "new-spec F-RVW-c98f5ca-7"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-8",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js:27-28",
+      "problem": "Joiner receives presence twice (embedded in hello.state.presence and again as standalone broadcast).",
+      "fix": "Broadcast presence to other sockets only on join; rely on hello.state.presence for the joiner.",
+      "resolution": "new-spec F-RVW-c98f5ca-8"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-9",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "tests/wsHandler.test.js (whole file)",
+      "problem": "No tests cover invalid query.as values: '' / '   ' / 'RED' / 'x' / null all silently fall through to auto-assign.",
+      "fix": "Add coverage for invalid query.as inputs; ties to F-RVW-c98f5ca-5 enforcement.",
+      "resolution": "new-spec F-RVW-c98f5ca-9"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-10",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "vitest.config.js:13-18",
+      "problem": "exclude '../server.js' is dead config: include 'src/**' glob never matches it. The TODO comment misleads about the actual coverage state.",
+      "fix": "Remove the dead exclude+TODO; if Phase 5/6 wants server.js in coverage, add it to include and configure properly.",
+      "resolution": "new-spec F-RVW-c98f5ca-10"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-11",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "tests/wsHandler.test.js:300-332",
+      "problem": "StubWS-based tests cannot exercise backpressure (ws.bufferedAmount), half-open peers (heartbeat ping/pong), or slow consumers; the safeSend test is fragile (resets game mid-test).",
+      "fix": "Phase-6 (Q-205) ws integration suite must cover real-network edge cases.",
+      "resolution": "new-spec F-RVW-c98f5ca-11"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-12",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "src/lib/wsHandler.js (whole file)",
+      "problem": "Confirming non-regression: c98f5ca does NOT accidentally fix F-RVW-9d6491e-2 (joinSocket idempotency); handler calls joinSocket exactly once per ws lifecycle. Phase 12 still required.",
+      "fix": "n/a — informational",
+      "resolution": "no-op (F-RVW-9d6491e-2 remains open under Phase 12)"
+    },
+    {
+      "id": "FND-COMMIT-c98f5ca-13",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "file": "server.js:40",
+      "problem": "CLI guard (process.argv[1] === new URL(import.meta.url).pathname) does not handle symlinked invocation; rare but a known footgun.",
+      "fix": "Use es-main pattern or pathToFileURL(process.argv[1]).href === import.meta.url.",
+      "resolution": "new-spec F-RVW-c98f5ca-13"
     }
   ],
   "iterations": []
