@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "CUA-checkers task manifest",
+  "description": "Phased orchestration plan. Source of truth for build phases. Backed by specs.json for requirement-level tracking.",
+  "rules": {
+    "no_deletion": "Agents (orchestrator and teammates alike) MUST NOT delete items from this manifest. Items may only have their `status` field updated. New items may be appended (e.g., when reviews surface new work); existing items must never be removed, renamed away, or reset to a pre-existing terminal status.",
+    "status_values": {
+      "todo": "Not yet started; ready when dependencies (if any) clear.",
+      "in_progress": "Actively being worked on by the orchestrator's main thread.",
+      "delegated": "In flight on a teammate. Track via TaskList under ~/.claude/tasks/cua-checkers/.",
+      "deferred": "Blocked-by-design on an upstream phase. Activates when its `blocked_by` dependencies all reach `done`.",
+      "recurring": "Quality gate that fires repeatedly (e.g., per-commit, pre-push). Never reaches a terminal state during the loop.",
+      "done": "Phase fully closed; corresponding specs.json items flipped to `done`; landing commit recorded in `evidence`."
+    },
+    "transitions_allowed": [
+      ["todo", "in_progress"],
+      ["todo", "delegated"],
+      ["todo", "deferred"],
+      ["deferred", "todo"],
+      ["deferred", "delegated"],
+      ["in_progress", "delegated"],
+      ["in_progress", "done"],
+      ["delegated", "in_progress"],
+      ["delegated", "done"],
+      ["recurring", "recurring"],
+      ["done", "in_progress"]
+    ],
+    "transition_done_to_in_progress_note": "Permitted only when a downstream review surfaces a regression on a previously-closed phase; record the reason on the item's `notes` field."
+  },
+  "process": {
+    "tdd": "Red-Green-Refactor; 100% line+branch+function+statement coverage of src/ before push.",
+    "review_per_commit": {
+      "via": "codex:codex-rescue subagent (codex plugin)",
+      "model": "gpt-5.4-mini",
+      "reasoning": "xhigh"
+    },
+    "review_pre_push": {
+      "via": "codex:codex-rescue subagent (codex plugin)",
+      "model": "gpt-5.5",
+      "reasoning": "high"
+    },
+    "delegation": "Orchestrator (opus) delegates ALL implementation to sonnet teammates created via TeamCreate. Adversarial reviews via codex plugin only.",
+    "loop_termination": "All manifest phases reach `done` (excluding `recurring` gates) AND specs.json has zero open entries AND latest pre-push review reports clean AND latest post-push review reports clean."
+  },
+  "phases": [
+    {
+      "id": 0,
+      "title": "Scaffold seeds",
+      "status": "done",
+      "evidence": "commit f1e1aae",
+      "details": "package.json, next.config.mjs, jsconfig.json, src/lib/checkers.js, src/lib/store.js, .gitignore, legacy/ move"
+    },
+    {
+      "id": 1,
+      "title": "Dev infra: vitest + 100% coverage thresholds",
+      "status": "done",
+      "evidence": "commit 9d6491e by infra@cua-checkers",
+      "details": "checkers.js and store.js are temporarily excluded from coverage; excludes removed in Phases 2 & 3."
+    },
+    {
+      "id": 2,
+      "title": "TDD rules engine (Q-202)",
+      "status": "done",
+      "owner": "rules-tdd@cua-checkers",
+      "task_id": 2,
+      "spec_refs": ["Q-201", "Q-202", "F-004"],
+      "evidence": "tests/rules.test.js (43 tests, 100% coverage on src/lib/checkers.js); finding F-019 logged."
+    },
+    {
+      "id": 3,
+      "title": "TDD store (Q-203)",
+      "status": "done",
+      "blocked_by": [2],
+      "spec_refs": ["Q-203", "F-011", "F-015"],
+      "task_id": 3,
+      "evidence": "commit 22654af — tests/store.test.js (33 tests, 100% coverage on src/lib/store.js)"
+    },
+    {
+      "id": 4,
+      "title": "server.js + src/lib/wsHandler.js",
+      "status": "todo",
+      "blocked_by": [3],
+      "spec_refs": ["F-010", "F-013", "F-015"]
+    },
+    {
+      "id": 5,
+      "title": "TDD REST API routes",
+      "status": "deferred",
+      "blocked_by": [4],
+      "spec_refs": ["F-012", "Q-204"]
+    },
+    {
+      "id": 6,
+      "title": "TDD WebSocket protocol",
+      "status": "deferred",
+      "blocked_by": [4],
+      "spec_refs": ["F-013", "F-015", "Q-205"]
+    },
+    {
+      "id": 7,
+      "title": "Next.js client + role-color theming",
+      "status": "deferred",
+      "blocked_by": [6],
+      "spec_refs": ["F-014", "F-016", "F-017", "F-018", "Q-206"]
+    },
+    {
+      "id": 8,
+      "title": "Per-commit codex adversarial review",
+      "status": "recurring",
+      "spec_refs": ["R-300"],
+      "details": "gpt-5.4-mini xhigh via codex:codex-rescue subagent. Fires after each implementation commit. Findings are appended as new spec entries with status=todo and as new manifest phases."
+    },
+    {
+      "id": 9,
+      "title": "Pre-push codex adversarial review",
+      "status": "recurring",
+      "spec_refs": ["R-301"],
+      "details": "gpt-5.5 high via codex:codex-rescue subagent. Gates every push to origin."
+    },
+    {
+      "id": 10,
+      "title": "Push to origin when all gates green",
+      "status": "deferred",
+      "blocked_by": [9]
+    },
+    {
+      "id": 11,
+      "title": "Iterate on findings",
+      "status": "recurring",
+      "details": "Absorb every review/test finding as new spec entries and new manifest phases; re-enter loop. Terminates only when loop_termination conditions hold."
+    }
+  ],
+  "current_state": {
+    "active_teammates": [
+      { "name": "rules-tdd-or-claimant@cua-checkers", "phase_id": 3, "task_id": 3 }
+    ],
+    "idle_teammates": [
+      { "name": "infra@cua-checkers", "last_phase": 1 }
+    ],
+    "in_flight_reviews": [
+      {
+        "subagent": "codex:codex-rescue",
+        "model": "gpt-5.4-mini",
+        "reasoning": "xhigh",
+        "commits_under_review": ["f1e1aae", "9d6491e"],
+        "kind": "per-commit",
+        "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
+      }
+    ],
+    "last_landed_commit": "f57f726"
+  },
+  "history": [
+    {
+      "phase_id": 0,
+      "event": "scaffold seeds landed",
+      "commit": "f1e1aae"
+    },
+    {
+      "phase_id": 1,
+      "event": "test infra landed",
+      "commit": "9d6491e",
+      "owner": "infra@cua-checkers"
+    },
+    {
+      "phase_id": 2,
+      "event": "rules engine TDD landed; Q-201 + Q-202 done; F-019 finding logged for unreachable defensive branch in checkers.js findCaptureSequences (suppressed via v8 ignore)",
+      "commit": "a351afd",
+      "owner": "rules-tdd@cua-checkers"
+    },
+    {
+      "phase_id": 3,
+      "event": "store TDD landed; Q-203 done; 33 tests, 100% coverage on src/lib/store.js",
+      "commit": "22654af"
+    }
+  ]
+}
