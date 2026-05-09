@@ -1,0 +1,532 @@
+openapi: 3.1.0
+info:
+  title: CUA Checkers API
+  version: 0.2.0
+  description: >
+    REST API for managing checkers games. Games are created on demand and
+    persist in memory for the lifetime of the server process. WebSocket
+    connections (ws://host/ws?game=<id>) receive live state broadcasts after
+    each move or reset.
+
+servers:
+  - url: /api
+    description: Next.js API routes (same origin)
+
+tags:
+  - name: games
+    description: Game lifecycle — list, create, inspect, reset
+  - name: moves
+    description: Move submission and history
+
+paths:
+  /games:
+    get:
+      tags: [games]
+      summary: List all games
+      operationId: listGames
+      responses:
+        "200":
+          description: Array of game summaries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameList"
+
+    post:
+      tags: [games]
+      summary: Create or retrieve a game
+      operationId: createGame
+      description: >
+        Creates a new game with a random id, or ensures a game with the
+        supplied id exists. Returns 201 on creation, 200 if the id already
+        existed.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  pattern: "^[A-Za-z0-9_-]{1,64}$"
+                  description: Optional explicit game id. Generated randomly when omitted.
+            examples:
+              auto_id:
+                summary: Let the server generate an id
+                value: {}
+              explicit_id:
+                summary: Request a specific id
+                value: { id: "my-game" }
+      responses:
+        "200":
+          description: Game already existed; full state returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameCreated"
+        "201":
+          description: New game created; full state returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameCreated"
+        "400":
+          $ref: "#/components/responses/InvalidId"
+
+  /games/{id}:
+    parameters:
+      - $ref: "#/components/parameters/gameId"
+
+    get:
+      tags: [games]
+      summary: Get full game state
+      operationId: getGame
+      description: >
+        Returns the full game state. If the game does not yet exist it is
+        created implicitly (same behaviour as POST /games with an explicit id).
+      responses:
+        "200":
+          description: Full game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullState"
+        "400":
+          $ref: "#/components/responses/InvalidId"
+
+    delete:
+      tags: [games]
+      summary: Reset a game to its initial state
+      operationId: resetGame
+      description: >
+        Resets the board to the starting position and broadcasts a `state`
+        event to all connected WebSocket clients for this game.
+      responses:
+        "200":
+          description: Game reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [true]
+        "400":
+          $ref: "#/components/responses/InvalidId"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /games/{id}/moves:
+    parameters:
+      - $ref: "#/components/parameters/gameId"
+
+    get:
+      tags: [moves]
+      summary: Get move history
+      operationId: getMoves
+      responses:
+        "200":
+          description: Ordered list of moves in SAN notation
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [history]
+                properties:
+                  history:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HistoryEntry"
+        "400":
+          $ref: "#/components/responses/InvalidId"
+
+    post:
+      tags: [moves]
+      summary: Submit a move
+      operationId: postMove
+      description: >
+        Attempts the move. On success, broadcasts a `state` event to all
+        WebSocket clients for this game and returns the new full state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveRequest"
+            examples:
+              simple_move:
+                summary: Simple non-capture move
+                value: { role: "red", from: "a3", to: "b4" }
+              capture:
+                summary: Capture move (same from/to — engine resolves path)
+                value: { role: "red", from: "a3", to: "c5" }
+      responses:
+        "200":
+          description: Move accepted; new state returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoveAccepted"
+        "400":
+          description: Bad request — invalid id, malformed JSON, or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                invalid_id:
+                  $ref: "#/components/examples/EInvalidId"
+                malformed_json:
+                  value:
+                    ok: false
+                    error:
+                      code: E_MALFORMED_JSON
+                      message: "Request body is not valid JSON"
+                missing_fields:
+                  value:
+                    ok: false
+                    error:
+                      code: E_MISSING_FIELDS
+                      message: "missing fields: role, from, to required"
+        "403":
+          description: Observer attempted to move
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                observer:
+                  value:
+                    ok: false
+                    error:
+                      code: E_OBSERVER
+                      message: "observer-cannot-move"
+        "409":
+          description: Wrong turn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                wrong_turn:
+                  value:
+                    ok: false
+                    error:
+                      code: E_NOT_YOUR_TURN
+                      message: "not-your-turn (current: red, you: black)"
+        "422":
+          description: Illegal move
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                illegal:
+                  value:
+                    ok: false
+                    error:
+                      code: E_ILLEGAL_MOVE
+                      message: "no legal move from a3 to b5"
+
+components:
+  parameters:
+    gameId:
+      name: id
+      in: path
+      required: true
+      description: Game identifier — alphanumeric plus `-` and `_`, 1–64 chars
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9_-]{1,64}$"
+
+  responses:
+    InvalidId:
+      description: Game id fails validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            invalid_id:
+              $ref: "#/components/examples/EInvalidId"
+    NotFound:
+      description: Game does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            not_found:
+              value:
+                ok: false
+                error:
+                  code: E_NOT_FOUND
+                  message: "Game not found"
+
+  examples:
+    EInvalidId:
+      value:
+        ok: false
+        error:
+          code: E_INVALID_ID
+          message: "Invalid game id"
+
+  schemas:
+    # ------------------------------------------------------------------ #
+    # Shared building blocks                                               #
+    # ------------------------------------------------------------------ #
+
+    ErrorEnvelope:
+      type: object
+      required: [ok, error]
+      properties:
+        ok:
+          type: boolean
+          enum: [false]
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - E_INVALID_ID
+                - E_NOT_FOUND
+                - E_MALFORMED_JSON
+                - E_MISSING_FIELDS
+                - E_OBSERVER
+                - E_NOT_YOUR_TURN
+                - E_ILLEGAL_MOVE
+            message:
+              type: string
+
+    Presence:
+      type: object
+      required: [redConnected, blackConnected, observers]
+      properties:
+        redConnected:
+          type: boolean
+        blackConnected:
+          type: boolean
+        observers:
+          type: integer
+          minimum: 0
+
+    PieceMap:
+      type: object
+      description: >
+        Sparse map of board square → piece. Keys are algebraic coordinates
+        (a1–h8). Values are `"red"`, `"black"`, `"red-king"`, or
+        `"black-king"`. Squares with no piece are absent.
+      additionalProperties:
+        type: string
+        enum: [red, black, red-king, black-king]
+      example:
+        a1: red
+        c1: red
+        e5: black-king
+
+    PieceCounts:
+      type: object
+      required: [red, black, redK, blackK]
+      properties:
+        red:
+          type: integer
+          description: Red men (non-kings) remaining
+        black:
+          type: integer
+          description: Black men (non-kings) remaining
+        redK:
+          type: integer
+          description: Red kings remaining
+        blackK:
+          type: integer
+          description: Black kings remaining
+
+    LegalMove:
+      type: object
+      required: [from, to, path, captured, isCapture, kinged]
+      properties:
+        from:
+          type: string
+          description: Origin square (e.g. "a3")
+        to:
+          type: string
+          description: Destination square (e.g. "b4")
+        path:
+          type: array
+          items:
+            type: string
+          description: All squares visited, including multi-jump intermediates
+        captured:
+          type: array
+          items:
+            type: string
+          description: Squares of captured pieces (empty for non-captures)
+        isCapture:
+          type: boolean
+        kinged:
+          type: boolean
+          description: True if this move results in the piece being kinged
+
+    HistoryEntry:
+      type: object
+      required: [san, color]
+      properties:
+        san:
+          type: string
+          description: Move in SAN notation, e.g. "a3-b4" or "c3xe5xg7"
+        color:
+          type: string
+          enum: [red, black]
+
+    LastMove:
+      type: object
+      nullable: true
+      required: [from, to, path, captured, isCapture, kinged]
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        path:
+          type: array
+          items:
+            type: string
+        captured:
+          type: array
+          items:
+            type: string
+        isCapture:
+          type: boolean
+        kinged:
+          type: boolean
+
+    StatePayload:
+      type: object
+      required: [turn, moveNumber, pieces, counts, legalMoves, history, lastMove, gameOver, winner]
+      properties:
+        turn:
+          type: string
+          enum: [red, black]
+          description: Whose turn it is
+        moveNumber:
+          type: integer
+          minimum: 1
+        pieces:
+          $ref: "#/components/schemas/PieceMap"
+        counts:
+          $ref: "#/components/schemas/PieceCounts"
+        legalMoves:
+          type: array
+          items:
+            $ref: "#/components/schemas/LegalMove"
+          description: All legal moves for the player whose turn it is; empty when game is over
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryEntry"
+        lastMove:
+          $ref: "#/components/schemas/LastMove"
+        gameOver:
+          type: boolean
+        winner:
+          type: string
+          nullable: true
+          enum: [red, black, null]
+
+    FullState:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+        - $ref: "#/components/schemas/StatePayload"
+        - type: object
+          required: [presence]
+          properties:
+            presence:
+              $ref: "#/components/schemas/Presence"
+
+    # ------------------------------------------------------------------ #
+    # Endpoint-specific response shapes                                    #
+    # ------------------------------------------------------------------ #
+
+    GameSummary:
+      type: object
+      required: [id, turn, moveNumber, moves, over, winner, redConnected, blackConnected, observers, createdAt]
+      properties:
+        id:
+          type: string
+        turn:
+          type: string
+          enum: [red, black]
+        moveNumber:
+          type: integer
+        moves:
+          type: integer
+          description: Total half-moves played so far
+        over:
+          type: boolean
+        winner:
+          type: string
+          nullable: true
+          enum: [red, black, null]
+        redConnected:
+          type: boolean
+        blackConnected:
+          type: boolean
+        observers:
+          type: integer
+        createdAt:
+          type: integer
+          description: Unix timestamp (ms) when the game was created
+
+    GameList:
+      type: object
+      required: [games]
+      properties:
+        games:
+          type: array
+          items:
+            $ref: "#/components/schemas/GameSummary"
+
+    GameCreated:
+      type: object
+      required: [id, state]
+      properties:
+        id:
+          type: string
+        state:
+          $ref: "#/components/schemas/FullState"
+
+    MoveRequest:
+      type: object
+      required: [role, from, to]
+      properties:
+        role:
+          type: string
+          enum: [red, black, observer]
+          description: The role of the submitting player
+        from:
+          type: string
+          description: Origin square in algebraic notation (e.g. "a3")
+        to:
+          type: string
+          description: Destination square in algebraic notation (e.g. "b4")
+
+    MoveAccepted:
+      type: object
+      required: [ok, move, state]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        move:
+          $ref: "#/components/schemas/LegalMove"
+        state:
+          $ref: "#/components/schemas/FullState"
