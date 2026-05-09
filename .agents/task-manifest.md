@@ -47,6 +47,7 @@
 - [⏸] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — blocked_by Phase 22
 - [⏸] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
 - [⏸] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — blocked_by Phase 15+17
+- [~] Phase 30: Stabilize test suite — per-file timeout / pool-split for tests/server.test.js (F-INFRA-1) — orchestrator will dispatch fixer
 
 ## Active workers
 

@@ -453,6 +453,15 @@
         15,
         17
       ]
+    },
+    {
+      "id": 30,
+      "title": "Stabilize test suite: per-file timeout or pool-split for tests/server.test.js (F-INFRA-1)",
+      "status": "todo",
+      "spec_refs": [
+        "F-INFRA-1"
+      ],
+      "blocked_by": []
     }
   ],
   "current_state": {
@@ -622,6 +631,13 @@
         "WS_RATE_LIMIT_OPS",
         "WS_RATE_LIMIT_WINDOW_MS"
       ]
+    },
+    {
+      "phase_id": 30,
+      "event": "New phase 30 added: stabilize test suite — per-file timeout or pool-split for tests/server.test.js. Finding FND-PHASE7-1 from client-impl@cua-checkers Phase 7 closure report on b07f4a8. New spec F-INFRA-1 (severity major). No code changes; metadata-only.",
+      "source": "client-impl@cua-checkers Phase 7 report on b07f4a8",
+      "new_specs": ["F-INFRA-1"],
+      "new_phases": [30]
     }
   ]
 }
