@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "CUA Checkers spec ledger",
+  "description": "Authoritative spec list. Each item has status flag. Findings from tests and adversarial reviews append new spec entries. Iterate until all status=done.",
+  "statuses": ["todo", "in_progress", "blocked", "review", "done"],
+  "process": {
+    "tdd": "Red-Green-Refactor. Write failing test first, implement minimum to pass, refactor.",
+    "coverage": "100% line+branch coverage required for src/ before push.",
+    "review_per_commit": {
+      "model": "gpt-5.4-mini",
+      "reasoning": "xhigh",
+      "via": "codex-rescue (codex CLI)",
+      "scope": "diff of HEAD~1..HEAD"
+    },
+    "review_pre_push": {
+      "model": "gpt-5.5",
+      "reasoning": "high",
+      "via": "codex-rescue (codex CLI)",
+      "scope": "all unpushed commits vs origin/main"
+    },
+    "findings_handling": "Every finding from any test/review becomes a new spec entry with status=todo. Loop continues until specs.json has zero todo|in_progress|review entries.",
+    "delegation": "Orchestrator only. All implementation tasks delegated to sonnet-model team agents in parallel where possible. Opus (this assistant) does NOT write code or run tests directly.",
+    "team": "Sonnet team agents created via TeamCreate, addressable via SendMessage."
+  },
+  "specs": [
+    {
+      "id": "F-001",
+      "title": "Browser-based 2D checkers game",
+      "status": "done",
+      "evidence": "legacy/index.html (commit bdec586)"
+    },
+    {
+      "id": "F-002",
+      "title": "CUA-friendly DOM: stable square IDs (sq-<file><rank>), data-square, data-piece, aria-label",
+      "status": "done",
+      "evidence": "legacy/index.html (commit bdec586)",
+      "carryover_to": "F-100"
+    },
+    {
+      "id": "F-003",
+      "title": "JS programmatic API on window.checkers (getState, getLegalMoves, move, moveSan, reset, undo, onChange)",
+      "status": "done",
+      "evidence": "legacy/index.html",
+      "carryover_to": "F-101"
+    },
+    {
+      "id": "F-004",
+      "title": "Permissive rules: no forced captures, multi-jump chains may halt at any reachable square",
+      "status": "done",
+      "evidence": "src/lib/checkers.js",
+      "notes": "Implemented in pure rules engine; ported from legacy."
+    },
+    {
+      "id": "F-005",
+      "title": "Move-hint toggle: always / off / first N moves",
+      "status": "done",
+      "evidence": "legacy/index.html",
+      "carryover_to": "F-102"
+    },
+    {
+      "id": "F-010",
+      "title": "Convert app to Next.js (App Router) with custom Node server",
+      "status": "in_progress",
+      "evidence": "package.json, next.config.mjs, jsconfig.json present; server.js TBD"
+    },
+    {
+      "id": "F-011",
+      "title": "Server tracks all moves authoritatively (in-memory game store keyed by gameId)",
+      "status": "in_progress",
+      "evidence": "src/lib/store.js"
+    },
+    {
+      "id": "F-012",
+      "title": "REST API route for external agent: GET /api/games, GET /api/games/:id, GET /api/games/:id/moves, POST /api/games/:id/moves",
+      "status": "todo"
+    },
+    {
+      "id": "F-013",
+      "title": "WebSocket /ws endpoint for browser↔server move passing and live state sync; supports query params game and as (red|black|observer)",
+      "status": "todo"
+    },
+    {
+      "id": "F-014",
+      "title": "Visual role indicator: BACKGROUND or HEADER AREA color reflects role (red=red, black=neutral/dark, observer=blue/green). Not a banner.",
+      "status": "todo",
+      "notes": "User clarified: header area or full-page tint, not a small banner. Distinct color per role."
+    },
+    {
+      "id": "F-015",
+      "title": "Player role assignment: first joiner = red, second = black, rest = observers; freed on disconnect; client may request role via ?as=…",
+      "status": "todo"
+    },
+    {
+      "id": "F-016",
+      "title": "Move-hint toggle present in Next.js client (parity with legacy)",
+      "status": "todo"
+    },
+    {
+      "id": "F-017",
+      "title": "JS programmatic API present on window.checkers in Next.js client (parity with legacy, with WS-driven state)",
+      "status": "todo"
+    },
+    {
+      "id": "F-018",
+      "title": "CUA-friendly DOM in Next.js client (parity with legacy)",
+      "status": "todo"
+    },
+    {
+      "id": "P-100",
+      "title": "Spec file: specs.json maintained with status flags; loop until all entries reach done",
+      "status": "in_progress"
+    },
+    {
+      "id": "P-101",
+      "title": "Task manifest at .agents/task-manifest.md with phased plan",
+      "status": "todo"
+    },
+    {
+      "id": "Q-200",
+      "title": "Vitest test runner with @vitest/coverage-v8; npm test produces coverage report",
+      "status": "todo"
+    },
+    {
+      "id": "Q-201",
+      "title": "100% line and branch coverage of src/ enforced via coverage thresholds",
+      "status": "todo"
+    },
+    {
+      "id": "Q-202",
+      "title": "Rules engine unit tests: initial board, simple moves, captures, multi-jump prefixes, king promotion, mid-jump promotion stops chain, game over detection",
+      "status": "todo"
+    },
+    {
+      "id": "Q-203",
+      "title": "Store unit tests: role assignment ordering, requested role honoring, observer fallback, disconnect frees role, attemptMove turn enforcement, undo/reset",
+      "status": "todo"
+    },
+    {
+      "id": "Q-204",
+      "title": "REST API integration tests with running Next server: GET list, GET state, GET moves, POST moves (success + role mismatch + illegal)",
+      "status": "todo"
+    },
+    {
+      "id": "Q-205",
+      "title": "WebSocket integration test: two clients connect, role assignment, move broadcast, presence updates",
+      "status": "todo"
+    },
+    {
+      "id": "Q-206",
+      "title": "Client component tests (React testing-library + jsdom): renders board, role color theming, click handlers gated by turn/role, hint toggle behavior",
+      "status": "todo"
+    },
+    {
+      "id": "R-300",
+      "title": "Per-commit adversarial review via codex-rescue with gpt-5.4-mini xhigh reasoning; findings logged into specs.json",
+      "status": "todo"
+    },
+    {
+      "id": "R-301",
+      "title": "Pre-push adversarial review via codex-rescue with gpt-5.5 high reasoning; findings logged into specs.json",
+      "status": "todo"
+    },
+    {
+      "id": "O-400",
+      "title": "Sonnet team created via TeamCreate; orchestrator delegates all implementation; no opus implementation work",
+      "status": "todo"
+    }
+  ],
+  "findings_log": [],
+  "iterations": []
+}
