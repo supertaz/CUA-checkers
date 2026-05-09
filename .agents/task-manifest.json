@@ -159,7 +159,7 @@
         "Q-205"
       ],
       "owner": "ws-tdd@cua-checkers",
-      "evidence": "TBD — commit SHA recorded after git commit"
+      "evidence": "commit 92dcb9e — tests/ws.test.js (17 integration tests, 100% coverage on server.js); F-013 done; Q-205 done"
     },
     {
       "id": 7,
@@ -436,7 +436,7 @@
         "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "5e174b0"
+    "last_landed_commit": "92dcb9e"
   },
   "history": [
     {
@@ -534,7 +534,8 @@
     {
       "phase_id": 6,
       "event": "WS integration tests landed; F-013 done; Q-205 done; 17 integration tests against live server; 100% coverage on server.js including HTTP handler and non-/ws upgrade branches; all 134 tests passing",
-      "owner": "ws-tdd@cua-checkers"
+      "owner": "ws-tdd@cua-checkers",
+      "commit": "92dcb9e"
     }
   ]
 }

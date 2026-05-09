@@ -23,7 +23,7 @@
 - [x] Phase 3: TDD store (Q-203) — commit `22654af`
 - [x] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (commit c98f5ca)
 - [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit 3eae194)
-- [x] Phase 6: TDD WebSocket protocol (F-013, Q-205) — `ws-tdd@cua-checkers` (17 integration tests, 100% server.js coverage)
+- [x] Phase 6: TDD WebSocket protocol (F-013, Q-205) — `ws-tdd@cua-checkers` commit `92dcb9e` (17 integration tests, 100% server.js coverage)
 - [⏸] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — blocked by Phase 6
 - [♻] Phase 8: per-commit codex adversarial review (R-300) — gpt-5.4-mini xhigh via `codex:codex-rescue` subagent
 - [♻] Phase 9: pre-push codex adversarial review (R-301) — gpt-5.5 high via `codex:codex-rescue` subagent
@@ -31,12 +31,12 @@
 - [♻] Phase 11: iterate on findings — perpetual until specs.json fully green
 - [x] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — commit `5e174b0` (`joinsocket-fix@cua-checkers`)
 - [x] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
-- [>] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — `server-bootstrap-hardening@cua-checkers`
-- [⏸] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
-- [>] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — `server-bootstrap-hardening@cua-checkers`
-- [⏸] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
-- [⏸] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
-- [⏸] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
+- [x] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — `server-bootstrap-hardening@cua-checkers` (tests/server.test.js, 100% coverage)
+- [⏸] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
+- [x] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — `server-bootstrap-hardening@cua-checkers` (tests/server.test.js, 100% coverage)
+- [⏸] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
+- [⏸] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
+- [⏸] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
 - [⏸] Phase 20: Status codes for /moves (F-RVW-3eae194-1) — blocked_by Phase 5 lifecycle
 - [⏸] Phase 21: REST gameId validation (F-RVW-3eae194-2) — blocked_by Phase 18
 - [⏸] Phase 22: Spec entries for POST /games + DELETE /games/:id (F-RVW-3eae194-3) — doc-only follow-up
@@ -54,4 +54,4 @@
 
 ## Last landed commit
 
-TBD — Phase 6 WS integration tests: 17 live-server tests, 100% server.js coverage, F-013 done, Q-205 done. SHA updated after commit.
+`92dcb9e` — Phase 6 WS integration tests: 17 live-server tests (ws.test.js), 100% server.js coverage, F-013 done, Q-205 done. Also includes tests/server.test.js (Phase 14/16 server bootstrap tests).
