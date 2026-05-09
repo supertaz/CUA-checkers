@@ -441,7 +441,7 @@
         "F-RVW-batch1-2"
       ],
       "blocked_by": [],
-      "evidence": "server.js: export async function shutdown(signal, {server, wss}). Tests: tests/server.test.js shutdown() describe block (5 tests): active client close frame 1001, zero clients, hung client force-terminate, client.close()+terminate() throw branches, outer 5s safety net. server.js 100% statements/branches/functions/lines. Commit SHA: TBD (fill after commit)."
+      "evidence": "server.js: export async function shutdown(signal, {server, wss}). Tests: tests/server.test.js shutdown() describe block (5 tests): active client close frame 1001, zero clients, hung client force-terminate, client.close()+terminate() throw branches, outer 5s safety net. server.js 100% statements/branches/functions/lines. Commit SHA: 9f2abf0."
     },
     {
       "id": 29,
@@ -492,7 +492,7 @@
         "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "TBD",
+    "last_landed_commit": "9f2abf0",
     "last_landed_phase": 28
   },
   "history": [
@@ -648,7 +648,7 @@
       "phase_id": 28,
       "event": "Phase 28 done: async graceful shutdown export added to server.js; CLI wires SIGTERM/SIGINT with 5s safety net; 5 shutdown() tests cover all branches including close()/terminate() throw paths. server.js 100% coverage on all metrics.",
       "source": "shutdown-recovery@cua-checkers",
-      "commit": "TBD"
+      "commit": "9f2abf0"
     }
   ]
 }

@@ -57,4 +57,4 @@
 
 ## Last landed commit
 
-`TBD` — Phase 28 (shutdown-recovery): async graceful shutdown export in server.js; SIGTERM/SIGINT wiring; 5 shutdown() tests; server.js 100% coverage all metrics. (SHA to be filled after commit)
+`9f2abf0` — Phase 28 (shutdown-recovery): async graceful shutdown export in server.js; SIGTERM/SIGINT wiring; 5 shutdown() tests; server.js 100% coverage all metrics.
