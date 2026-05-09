@@ -83,31 +83,52 @@
       "evidence": "tests/ws.test.js (17 integration tests against live server: hello+role, presence, observer, requested-role, move acceptance, wrong-turn rejection, observer-move rejection, reset gating, undo gating, unknown-msg, malformed-json, disconnection, game isolation, HTTP branch, non-/ws upgrade branch) — 100% coverage on server.js"
     },
     {
-      "id": "F-014",
-      "title": "Visual role indicator: BACKGROUND or HEADER AREA color reflects role (red=red, black=neutral/dark, observer=blue/green). Not a banner.",
-      "status": "todo",
-      "notes": "User clarified: header area or full-page tint, not a small banner. Distinct color per role."
-    },
-    {
       "id": "F-015",
       "title": "Player role assignment: first joiner = red, second = black, rest = observers; freed on disconnect; client may request role via ?as=…",
       "status": "done",
       "evidence": "src/lib/wsHandler.js + store.js; all role assignment paths covered by tests/wsHandler.test.js (18 tests, 100% coverage)"
     },
     {
+      "id": "F-014",
+      "title": "Visual role indicator: BACKGROUND or HEADER AREA color reflects role (red=red, black=neutral/dark, observer=blue/green). Not a banner.",
+      "status": "done",
+      "evidence": "src/components/CheckersClient.jsx + src/app/globals.css: fixed 52px header strip (--role-header-bg) + body page-tint (--role-bg) via CSS variables on body[data-role]. Three distinct themes: red=#7f1010 header+dark-red body; black=#1a1a1a header+darker body; observer=#1976d2 header+slate body. Component applies data-role on <body> via useEffect. Tests: client.test.jsx 'Role theming' suite (8 tests)."
+    },
+    {
       "id": "F-016",
       "title": "Move-hint toggle present in Next.js client (parity with legacy)",
-      "status": "todo"
+      "status": "done",
+      "evidence": "src/components/CheckersClient.jsx: hintMode state (always/off/first) + hintN input; showHints used to toggle legal-move/legal-capture classes. Tests: client.test.jsx 'Hint toggle' suite (6 tests)."
     },
     {
       "id": "F-017",
       "title": "JS programmatic API present on window.checkers in Next.js client (parity with legacy, with WS-driven state)",
-      "status": "todo"
+      "status": "done",
+      "evidence": "src/components/CheckersClient.jsx: window.checkers API registered via useEffect; methods: getState, getLegalMoves, move, moveSan, select, reset, undo, onChange. WS-driven: move/moveSan send WS message + await response. Tests: client.test.jsx 'window.checkers API' suite (15 tests)."
     },
     {
       "id": "F-018",
       "title": "CUA-friendly DOM in Next.js client (parity with legacy)",
-      "status": "todo"
+      "status": "done",
+      "evidence": "src/components/CheckersClient.jsx: 64 squares rendered; dark squares have id=sq-<file><rank>, data-square, data-piece, aria-label, role=gridcell; piece data-color, data-king attrs; last-from/last-to/selected/legal-move/legal-capture classes. Tests: client.test.jsx 'Board rendering' suite (7 tests)."
+    },
+    {
+      "id": "F-100",
+      "title": "CUA-friendly DOM in Next.js client (carryover from F-002)",
+      "status": "done",
+      "evidence": "Fulfilled by F-018 — see src/components/CheckersClient.jsx (Phase 7)"
+    },
+    {
+      "id": "F-101",
+      "title": "window.checkers API in Next.js client (carryover from F-003)",
+      "status": "done",
+      "evidence": "Fulfilled by F-017 — see src/components/CheckersClient.jsx (Phase 7)"
+    },
+    {
+      "id": "F-102",
+      "title": "Move-hint toggle in Next.js client (carryover from F-005)",
+      "status": "done",
+      "evidence": "Fulfilled by F-016 — see src/components/CheckersClient.jsx (Phase 7)"
     },
     {
       "id": "P-100",
@@ -159,7 +180,8 @@
     {
       "id": "Q-206",
       "title": "Client component tests (React testing-library + jsdom): renders board, role color theming, click handlers gated by turn/role, hint toggle behavior",
-      "status": "todo"
+      "status": "done",
+      "evidence": "tests/client.test.jsx: 64 tests covering Board rendering (7), Role theming (9), Click handlers (6), Hint toggle (6), window.checkers API (15), WebSocket connection (7), Status panel (7), Controls (4). CheckersClient.jsx at 100% line/branch/function/statement coverage."
     },
     {
       "id": "R-300",

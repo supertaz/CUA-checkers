@@ -7,6 +7,10 @@ export default defineConfig({
     globalSetup: ['./tests/globalSetup.js'],
     setupFiles: ['./tests/setup.js'],
     include: ['tests/**/*.test.{js,jsx}'],
+    // Serialize test file execution: multiple concurrent Next.js dev-server instances
+    // compete for the .next build cache and cause flaky timeouts when run in parallel.
+    pool: 'forks',
+    poolOptions: { forks: { maxForks: 1 } },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

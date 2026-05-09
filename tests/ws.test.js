@@ -431,7 +431,7 @@ describe('server.js HTTP request handler', () => {
     const res = await fetch(`http://localhost:${port}/`);
     // Next.js handles the request; any response (200, 404, etc.) proves the handler ran
     expect(typeof res.status).toBe('number');
-  }, 15000);
+  }, 30000);
 });
 
 // -----------------------------------------------------------------------
