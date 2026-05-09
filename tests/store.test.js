@@ -359,3 +359,71 @@ describe('undoMove', () => {
     expect(g.snapshots).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// joinSocket — idempotency (F-RVW-9d6491e-2)
+// ---------------------------------------------------------------------------
+describe('joinSocket idempotency', () => {
+  test('double-join with same ws returns the same role both times', () => {
+    const id = uid();
+    const ws = mockWs();
+    const role1 = joinSocket(id, ws);
+    const role2 = joinSocket(id, ws);
+    expect(role1).toBe('red');
+    expect(role2).toBe('red');
+  });
+
+  test('double-join does not add the socket to a second role bucket', () => {
+    const id = uid();
+    const ws = mockWs();
+    joinSocket(id, ws);
+    joinSocket(id, ws);
+    const g = ensureGame(id);
+    // ws should only be in redWs, not in observers
+    expect(g.redWs).toBe(ws);
+    expect(g.observers.has(ws)).toBe(false);
+    // rolesByWs still has exactly one entry for ws
+    expect(g.rolesByWs.get(ws)).toBe('red');
+  });
+
+  test('leaveSocket after double-join clears all role slots cleanly', () => {
+    const id = uid();
+    const ws = mockWs();
+    joinSocket(id, ws);
+    joinSocket(id, ws);
+    leaveSocket(id, ws);
+    const g = ensureGame(id);
+    expect(g.redWs).toBeNull();
+    expect(g.observers.has(ws)).toBe(false);
+    expect(g.sockets.has(ws)).toBe(false);
+    expect(g.rolesByWs.has(ws)).toBe(false);
+  });
+
+  test('joinSocket(ws, "red") then joinSocket(ws, "black") keeps ws in red (idempotent — does not switch)', () => {
+    // Chosen semantic: return existing role on second call regardless of wanted param.
+    // Rationale: once a socket holds a seat, a reconnect storm must not evict it.
+    const id = uid();
+    const ws = mockWs();
+    const role1 = joinSocket(id, ws, 'red');
+    const role2 = joinSocket(id, ws, 'black');
+    expect(role1).toBe('red');
+    expect(role2).toBe('red');
+    const g = ensureGame(id);
+    expect(g.redWs).toBe(ws);
+    expect(g.blackWs).toBeNull();
+  });
+
+  test('ws1 joins red, ws2 joins black, ws1 rejoins — ws1 stays red, ws2 stays black, observer count 0', () => {
+    const id = uid();
+    const ws1 = mockWs();
+    const ws2 = mockWs();
+    joinSocket(id, ws1);
+    joinSocket(id, ws2);
+    const role = joinSocket(id, ws1);
+    expect(role).toBe('red');
+    const g = ensureGame(id);
+    expect(g.redWs).toBe(ws1);
+    expect(g.blackWs).toBe(ws2);
+    expect(g.observers.size).toBe(0);
+  });
+});

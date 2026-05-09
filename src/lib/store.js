@@ -55,6 +55,7 @@ export function fullPayload(g) {
 
 export function joinSocket(gameId, ws, wanted) {
   const g = ensureGame(gameId);
+  if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws);
   let role;
   if (wanted === "observer") {
     g.observers.add(ws); role = "observer";
