@@ -38,9 +38,11 @@ describe('GET /api/games', () => {
   it('returns a list (possibly empty)', async () => {
     const res = await gamesGET();
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toHaveProperty('games');
-    expect(Array.isArray(data.games)).toBe(true);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body).toHaveProperty('data');
+    expect(body.data).toHaveProperty('games');
+    expect(Array.isArray(body.data.games)).toBe(true);
   });
 });
 
@@ -50,10 +52,11 @@ describe('POST /api/games', () => {
     const req = jsonReq({ id });
     const res = await gamesPOST(req);
     expect(res.status).toBe(201);
-    const data = await res.json();
-    expect(data.id).toBe(id);
-    expect(data).toHaveProperty('state');
-    expect(data.state).toHaveProperty('turn');
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.data.id).toBe(id);
+    expect(body.data).toHaveProperty('state');
+    expect(body.data.state).toHaveProperty('turn');
   });
 
   it('returns 200 when game already exists', async () => {
@@ -62,24 +65,26 @@ describe('POST /api/games', () => {
     const req = jsonReq({ id });
     const res = await gamesPOST(req);
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.id).toBe(id);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.data.id).toBe(id);
   });
 
   it('generates an id when body is empty (no id field)', async () => {
     const req = jsonReq({});
     const res = await gamesPOST(req);
-    const data = await res.json();
-    expect(typeof data.id).toBe('string');
-    expect(data.id.length).toBeGreaterThan(0);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(typeof body.data.id).toBe('string');
+    expect(body.data.id.length).toBeGreaterThan(0);
   });
 
   it('subsequent GET /api/games returns created game', async () => {
     const id = 'test-list-after-create';
     await gamesPOST(jsonReq({ id }));
     const res = await gamesGET();
-    const data = await res.json();
-    const ids = data.games.map((g) => g.id);
+    const body = await res.json();
+    const ids = body.data.games.map((g) => g.id);
     expect(ids).toContain(id);
   });
 
@@ -87,9 +92,9 @@ describe('POST /api/games', () => {
     const req = jsonReq({ id: 'bad id with spaces' });
     const res = await gamesPOST(req);
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_INVALID_ID');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_INVALID_ID');
   });
 });
 
@@ -99,30 +104,31 @@ describe('GET /api/games/[id]', () => {
     ensureGame(id);
     const res = await gameGET(null, p(id));
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.id).toBe(id);
-    expect(data).toHaveProperty('turn');
-    expect(data).toHaveProperty('pieces');
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.data.id).toBe(id);
+    expect(body.data).toHaveProperty('turn');
+    expect(body.data).toHaveProperty('pieces');
   });
 
   it('returns 400 E_INVALID_ID for invalid path param', async () => {
     const res = await gameGET(null, p('bad id!!'));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_INVALID_ID');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_INVALID_ID');
   });
 });
 
 describe('DELETE /api/games/[id]', () => {
-  it('resets game state, broadcasts state, and returns {ok:true}', async () => {
+  it('resets game state, broadcasts state, and returns {ok:true, data:{}}', async () => {
     const id = 'test-delete-id';
     ensureGame(id);
     const broadcastSpy = vi.spyOn(store, 'broadcast');
     const res = await gameDELETE(null, p(id));
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toEqual({ ok: true });
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, data: {} });
     // Verify broadcast was called with the reset state
     expect(broadcastSpy).toHaveBeenCalledWith(
       id,
@@ -131,7 +137,7 @@ describe('DELETE /api/games/[id]', () => {
     // Verify the game still exists and is reset
     const getRes = await gameGET(null, p(id));
     const getData = await getRes.json();
-    expect(getData.moveNumber).toBe(1);
+    expect(getData.data.moveNumber).toBe(1);
     broadcastSpy.mockRestore();
   });
 
@@ -140,9 +146,9 @@ describe('DELETE /api/games/[id]', () => {
     const broadcastSpy = vi.spyOn(store, 'broadcast');
     const res = await gameDELETE(null, p(id));
     expect(res.status).toBe(404);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_NOT_FOUND');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_NOT_FOUND');
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -150,9 +156,9 @@ describe('DELETE /api/games/[id]', () => {
   it('returns 400 E_INVALID_ID for invalid path param', async () => {
     const res = await gameDELETE(null, p('bad id!!'));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_INVALID_ID');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_INVALID_ID');
   });
 });
 
@@ -162,18 +168,19 @@ describe('GET /api/games/[id]/moves', () => {
     ensureGame(id);
     const res = await movesGET(null, p(id));
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toHaveProperty('history');
-    expect(Array.isArray(data.history)).toBe(true);
-    expect(data.history).toHaveLength(0);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.data).toHaveProperty('history');
+    expect(Array.isArray(body.data.history)).toBe(true);
+    expect(body.data.history).toHaveLength(0);
   });
 
   it('returns 400 E_INVALID_ID for invalid path param', async () => {
     const res = await movesGET(null, p('bad id!!'));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_INVALID_ID');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_INVALID_ID');
   });
 });
 
@@ -195,10 +202,10 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'red', from: 'a3', to: 'b4' });
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.ok).toBe(true);
-    expect(data).toHaveProperty('move');
-    expect(data.state.turn).toBe('black');
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.data).toHaveProperty('move');
+    expect(body.data.state.turn).toBe('black');
     // broadcast must be called with correct shape
     expect(broadcastSpy).toHaveBeenCalledWith(
       id,
@@ -212,10 +219,10 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'black', from: 'b6', to: 'a5' });
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(409);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_NOT_YOUR_TURN');
-    expect(data.error.message).toMatch(/current.*red|red.*current/i);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_NOT_YOUR_TURN');
+    expect(body.error.message).toMatch(/current.*red|red.*current/i);
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -225,9 +232,9 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'observer', from: 'a3', to: 'b4' });
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(403);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_OBSERVER');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_OBSERVER');
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -237,9 +244,9 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'red' }); // missing from and to
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_MISSING_FIELDS');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_MISSING_FIELDS');
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -249,9 +256,9 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'red', from: 'z9', to: 'z8' });
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(422);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_ILLEGAL_MOVE');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_ILLEGAL_MOVE');
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -261,9 +268,9 @@ describe('POST /api/games/[id]/moves', () => {
     const req = rawReq('{ not valid json }');
     const res = await movesPOST(req, p(id));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_MALFORMED_JSON');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_MALFORMED_JSON');
     expect(broadcastSpy).not.toHaveBeenCalled();
     broadcastSpy.mockRestore();
   });
@@ -272,16 +279,16 @@ describe('POST /api/games/[id]/moves', () => {
     const req = jsonReq({ role: 'red', from: 'a3', to: 'b4' });
     const res = await movesPOST(req, p('bad id!!'));
     expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.ok).toBe(false);
-    expect(data.error.code).toBe('E_INVALID_ID');
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error.code).toBe('E_INVALID_ID');
   });
 
   it('after valid POST move, GET /moves returns history.length === 1', async () => {
     await movesPOST(jsonReq({ role: 'red', from: 'a3', to: 'b4' }), p(id));
     const res = await movesGET(null, p(id));
-    const data = await res.json();
-    expect(data.history).toHaveLength(1);
+    const body = await res.json();
+    expect(body.data.history).toHaveLength(1);
   });
 
   it('three valid moves accumulate in history', async () => {
@@ -290,8 +297,8 @@ describe('POST /api/games/[id]/moves', () => {
     await movesPOST(jsonReq({ role: 'black', from: 'b6', to: 'a5' }), p(id));
     await movesPOST(jsonReq({ role: 'red', from: 'c3', to: 'd4' }), p(id));
     const res = await movesGET(null, p(id));
-    const data = await res.json();
-    expect(data.history).toHaveLength(3);
+    const body = await res.json();
+    expect(body.data.history).toHaveLength(3);
   });
 
   it('gameOver flag is reachable via moves — state reflects over + winner when opponent has no moves', async () => {
@@ -303,10 +310,10 @@ describe('POST /api/games/[id]/moves', () => {
     // Instead, verify the field exists in a normal response (over:false) and
     // also test via a store.js level reset to a near-over board.
     const res = await movesPOST(jsonReq({ role: 'red', from: 'a3', to: 'b4' }), p(id));
-    const data = await res.json();
-    expect(data.state).toHaveProperty('gameOver');
+    const body = await res.json();
+    expect(body.data.state).toHaveProperty('gameOver');
     // Game should not be over yet
-    expect(data.state.gameOver).toBe(false);
-    expect(data.state.winner).toBeNull();
+    expect(body.data.state.gameOver).toBe(false);
+    expect(body.data.state.winner).toBeNull();
   });
 });

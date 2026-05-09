@@ -2,7 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "CUA Checkers spec ledger",
   "description": "Authoritative spec list. Each item has status flag. Findings from tests and adversarial reviews append new spec entries. Iterate until all status=done.",
-  "statuses": ["todo", "in_progress", "blocked", "review", "done"],
+  "statuses": [
+    "todo",
+    "in_progress",
+    "blocked",
+    "review",
+    "done"
+  ],
   "process": {
     "tdd": "Red-Green-Refactor. Write failing test first, implement minimum to pass, refactor.",
     "coverage": "100% line+branch coverage required for src/ before push.",
@@ -78,13 +84,13 @@
     },
     {
       "id": "F-013",
-      "title": "WebSocket /ws endpoint for browser↔server move passing and live state sync; supports query params game and as (red|black|observer)",
+      "title": "WebSocket /ws endpoint for browser\u2194server move passing and live state sync; supports query params game and as (red|black|observer)",
       "status": "done",
-      "evidence": "tests/ws.test.js (17 integration tests against live server: hello+role, presence, observer, requested-role, move acceptance, wrong-turn rejection, observer-move rejection, reset gating, undo gating, unknown-msg, malformed-json, disconnection, game isolation, HTTP branch, non-/ws upgrade branch) — 100% coverage on server.js"
+      "evidence": "tests/ws.test.js (17 integration tests against live server: hello+role, presence, observer, requested-role, move acceptance, wrong-turn rejection, observer-move rejection, reset gating, undo gating, unknown-msg, malformed-json, disconnection, game isolation, HTTP branch, non-/ws upgrade branch) \u2014 100% coverage on server.js"
     },
     {
       "id": "F-015",
-      "title": "Player role assignment: first joiner = red, second = black, rest = observers; freed on disconnect; client may request role via ?as=…",
+      "title": "Player role assignment: first joiner = red, second = black, rest = observers; freed on disconnect; client may request role via ?as=\u2026",
       "status": "done",
       "evidence": "src/lib/wsHandler.js + store.js; all role assignment paths covered by tests/wsHandler.test.js (18 tests, 100% coverage)"
     },
@@ -116,19 +122,19 @@
       "id": "F-100",
       "title": "CUA-friendly DOM in Next.js client (carryover from F-002)",
       "status": "done",
-      "evidence": "Fulfilled by F-018 — see src/components/CheckersClient.jsx (Phase 7)"
+      "evidence": "Fulfilled by F-018 \u2014 see src/components/CheckersClient.jsx (Phase 7)"
     },
     {
       "id": "F-101",
       "title": "window.checkers API in Next.js client (carryover from F-003)",
       "status": "done",
-      "evidence": "Fulfilled by F-017 — see src/components/CheckersClient.jsx (Phase 7)"
+      "evidence": "Fulfilled by F-017 \u2014 see src/components/CheckersClient.jsx (Phase 7)"
     },
     {
       "id": "F-102",
       "title": "Move-hint toggle in Next.js client (carryover from F-005)",
       "status": "done",
-      "evidence": "Fulfilled by F-016 — see src/components/CheckersClient.jsx (Phase 7)"
+      "evidence": "Fulfilled by F-016 \u2014 see src/components/CheckersClient.jsx (Phase 7)"
     },
     {
       "id": "P-100",
@@ -205,14 +211,14 @@
       "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
-      "evidence": "commit 5e174b0 — store.js line 58 early-return `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws)`; tests: 'joinSocket idempotency > double-join with same ws returns the same role both times', 'joinSocket idempotency > double-join does not add the socket to a second role bucket', 'joinSocket idempotency > leaveSocket after double-join clears all role slots cleanly', 'joinSocket idempotency > joinSocket(ws, \"red\") then joinSocket(ws, \"black\") keeps ws in red (idempotent — does not switch)', 'joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins — ws1 stays red, ws2 stays black, observer count 0'; store.js at 100% coverage"
+      "evidence": "commit 5e174b0 \u2014 store.js line 58 early-return `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws)`; tests: 'joinSocket idempotency > double-join with same ws returns the same role both times', 'joinSocket idempotency > double-join does not add the socket to a second role bucket', 'joinSocket idempotency > leaveSocket after double-join clears all role slots cleanly', 'joinSocket idempotency > joinSocket(ws, \"red\") then joinSocket(ws, \"black\") keeps ws in red (idempotent \u2014 does not switch)', 'joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins \u2014 ws1 stays red, ws2 stays black, observer count 0'; store.js at 100% coverage"
     },
     {
       "id": "F-RVW-9d6491e-4",
       "title": "Verify Next 15.1.6 advisory and upgrade if patched release exists; regenerate lockfile",
       "status": "done",
       "severity": "note",
-      "evidence": "next bumped 15.1.6 → 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated. Advisories addressed: GHSA-3h52-269p-cp9r (low, dev-server info exposure, fixed ≥15.2.2), GHSA-67rr-84xm-4c7r (high, cache poisoning DoS, fixed ≥15.1.8), GHSA-9qr9-h5gf-34mp (critical, RCE in React flight protocol, fixed ≥15.1.9), GHSA-w37m-7fhw-fmv9 (moderate, server actions source exposure, fixed ≥15.1.9), GHSA-mwv6-3258-q52c (high, DoS, fixed ≥15.1.10), GHSA-h25m-26qc-wcjf (high, HTTP deserialization DoS, fixed ≥15.1.12), GHSA-f82v-jwr5-mffw (critical, auth bypass in middleware, fixed ≥15.2.3), GHSA-ggv3-7p47-pfv8 (moderate, HTTP request smuggling, fixed ≥15.5.13), GHSA-3x4c-7xq6-9pq8 (moderate, image disk cache exhaustion, fixed ≥15.5.14), GHSA-q4gf-8mx6-v5v3 (high, DoS with server components, fixed ≥15.5.15). Remaining: GHSA-g5qg-72qw-gw5v and GHSA-xv57-4mr9-wg8v already cleared by 15.5.x range; postcss XSS (GHSA-qx2v-qp2m-jg93) only fixable via Next 9.x downgrade — deferred as not applicable. npm test: 108 tests, 100% coverage."
+      "evidence": "next bumped 15.1.6 \u2192 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated. Advisories addressed: GHSA-3h52-269p-cp9r (low, dev-server info exposure, fixed \u226515.2.2), GHSA-67rr-84xm-4c7r (high, cache poisoning DoS, fixed \u226515.1.8), GHSA-9qr9-h5gf-34mp (critical, RCE in React flight protocol, fixed \u226515.1.9), GHSA-w37m-7fhw-fmv9 (moderate, server actions source exposure, fixed \u226515.1.9), GHSA-mwv6-3258-q52c (high, DoS, fixed \u226515.1.10), GHSA-h25m-26qc-wcjf (high, HTTP deserialization DoS, fixed \u226515.1.12), GHSA-f82v-jwr5-mffw (critical, auth bypass in middleware, fixed \u226515.2.3), GHSA-ggv3-7p47-pfv8 (moderate, HTTP request smuggling, fixed \u226515.5.13), GHSA-3x4c-7xq6-9pq8 (moderate, image disk cache exhaustion, fixed \u226515.5.14), GHSA-q4gf-8mx6-v5v3 (high, DoS with server components, fixed \u226515.5.15). Remaining: GHSA-g5qg-72qw-gw5v and GHSA-xv57-4mr9-wg8v already cleared by 15.5.x range; postcss XSS (GHSA-qx2v-qp2m-jg93) only fixable via Next 9.x downgrade \u2014 deferred as not applicable. npm test: 108 tests, 100% coverage."
     },
     {
       "id": "F-RVW-c98f5ca-1",
@@ -247,7 +253,7 @@
       "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "WebSocketServer constructed with maxPayload ≤ 8 KiB; per-socket token bucket gates reset/undo (e.g. 1 op / 2 s); test asserting an oversize frame is rejected.",
+      "evidence_required": "WebSocketServer constructed with maxPayload \u2264 8 KiB; per-socket token bucket gates reset/undo (e.g. 1 op / 2 s); test asserting an oversize frame is rejected.",
       "evidence": "server.js: WebSocketServer({ noServer: true, maxPayload: 8*1024 }) (WS_MAX_PAYLOAD env override). wsHandler.js: per-socket token bucket, 10 ops/5 s (WS_RATE_LIMIT_OPS, WS_RATE_LIMIT_WINDOW_MS env); applies to move/reset/undo; not malformed JSON; bucket cleaned on close. ws.on('error') installed to suppress uncaught WS_ERR_UNSUPPORTED_MESSAGE_LENGTH. Tests: 'oversized frame (>8 KiB) causes server to close connection', 'sending 12 moves rapidly yields at least 2 E_RATE_LIMIT errors'. wsHandler.js + server.js 100% coverage. Commit: a3bffc6"
     },
     {
@@ -257,7 +263,7 @@
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
       "evidence_required": "Tests for ?game=a&game=b (array), bad-char gameIds, ?as=Red (case), ?as=x (invalid). Expect rejection or normalized first-value behavior with explicit error frame.",
-      "evidence": "validateGameId(id) exported from store.js (^[A-Za-z0-9_-]{1,64}$). wsHandler.js: array game coerced to first element, validated; invalid→E_INVALID_GAMEID + ws.close(1008). query.as validated against {''|red|black|observer}; invalid→E_INVALID_ROLE + ws.close(1008). Tests: 'invalid gameId', 'empty gameId', 'array game param coerced', 'gameId too long', 'invalid as value', 'as=x invalid', 'as=observer/red/black valid', 'array as coerced'. wsHandler.js 100% coverage. Commit: a3bffc6"
+      "evidence": "validateGameId(id) exported from store.js (^[A-Za-z0-9_-]{1,64}$). wsHandler.js: array game coerced to first element, validated; invalid\u2192E_INVALID_GAMEID + ws.close(1008). query.as validated against {''|red|black|observer}; invalid\u2192E_INVALID_ROLE + ws.close(1008). Tests: 'invalid gameId', 'empty gameId', 'array game param coerced', 'gameId too long', 'invalid as value', 'as=x invalid', 'as=observer/red/black valid', 'array as coerced'. wsHandler.js 100% coverage. Commit: a3bffc6"
     },
     {
       "id": "F-RVW-c98f5ca-6",
@@ -328,11 +334,11 @@
     },
     {
       "id": "F-RVW-3eae194-2",
-      "title": "REST surface lacks gameId allowlist + length cap — DoS via 10 MB id keys",
+      "title": "REST surface lacks gameId allowlist + length cap \u2014 DoS via 10 MB id keys",
       "status": "done",
       "severity": "major",
       "source": "FND-COMMIT-3eae194-2",
-      "evidence": "validateGameId() applied at all REST entry points: POST /api/games body id, GET/DELETE /api/games/[id] path params, GET/POST /api/games/[id]/moves path params; invalid id → 400+E_INVALID_ID; tests: 5 E_INVALID_ID assertions in tests/api.test.js; 100% coverage"
+      "evidence": "validateGameId() applied at all REST entry points: POST /api/games body id, GET/DELETE /api/games/[id] path params, GET/POST /api/games/[id]/moves path params; invalid id \u2192 400+E_INVALID_ID; tests: 5 E_INVALID_ID assertions in tests/api.test.js; 100% coverage"
     },
     {
       "id": "F-RVW-3eae194-3",
@@ -352,11 +358,11 @@
     },
     {
       "id": "F-RVW-3eae194-5",
-      "title": "POST /moves tests do not assert broadcast() was invoked — coverage hits the line, behavior unverified",
+      "title": "POST /moves tests do not assert broadcast() was invoked \u2014 coverage hits the line, behavior unverified",
       "status": "done",
       "severity": "major",
       "source": "FND-COMMIT-3eae194-5",
-      "evidence": "tests/api.test.js: vi.spyOn(store, 'broadcast') in all POST /moves tests — success path asserts called with (id, {type:'state', state:{id, turn}}); all rejection paths assert NOT called; DELETE success asserts called; DELETE 404 asserts NOT called"
+      "evidence": "tests/api.test.js: vi.spyOn(store, 'broadcast') in all POST /moves tests \u2014 success path asserts called with (id, {type:'state', state:{id, turn}}); all rejection paths assert NOT called; DELETE success asserts called; DELETE 404 asserts NOT called"
     },
     {
       "id": "F-RVW-3eae194-6",
@@ -364,11 +370,11 @@
       "status": "done",
       "severity": "major",
       "source": "FND-COMMIT-3eae194-6",
-      "evidence": "tests/api.test.js: history grows to 1 after one move, 3 after three moves, gameOver field present in response, malformed JSON → 400+E_MALFORMED_JSON, WS-vs-REST role asymmetry documented in comment above describe block"
+      "evidence": "tests/api.test.js: history grows to 1 after one move, 3 after three moves, gameOver field present in response, malformed JSON \u2192 400+E_MALFORMED_JSON, WS-vs-REST role asymmetry documented in comment above describe block"
     },
     {
       "id": "F-RVW-3eae194-7",
-      "title": "DELETE on non-existent id calls ensureGame and CREATES the game — surprising REST semantics",
+      "title": "DELETE on non-existent id calls ensureGame and CREATES the game \u2014 surprising REST semantics",
       "status": "done",
       "severity": "minor",
       "source": "FND-COMMIT-3eae194-7",
@@ -386,7 +392,7 @@
         "POST /api/games with no id generates a random id and returns 201",
         "POST /api/games with invalid id (fails validateGameId) returns 400 + {ok:false, error:{code:'E_INVALID_ID'}}"
       ],
-      "evidence": "src/app/api/games/route.js; tests/api.test.js POST /api/games suite (5 tests); 100% coverage"
+      "evidence": "src/app/api/games/route.js; tests/api.test.js POST /api/games suite (5 tests); envelope: {ok:true, data:{id,state}} on success, {ok:false, error:{code,message}} on error; 100% coverage"
     },
     {
       "id": "F-021",
@@ -399,14 +405,15 @@
         "DELETE /api/games/:id on non-existent id returns 404+{ok:false, error:{code:'E_NOT_FOUND'}}",
         "DELETE /api/games/:id with invalid id returns 400+{ok:false, error:{code:'E_INVALID_ID'}}"
       ],
-      "evidence": "src/app/api/games/[id]/route.js; tests/api.test.js DELETE /api/games/[id] suite (3 tests); 100% coverage"
+      "evidence": "src/app/api/games/[id]/route.js; tests/api.test.js DELETE /api/games/[id] suite (3 tests); envelope: {ok:true,data:{}} on success, {ok:false,error:{code,message}} on error; 100% coverage"
     },
     {
       "id": "F-RVW-3eae194-8",
       "title": "Inconsistent response envelopes across all three route files",
-      "status": "todo",
+      "status": "done",
       "severity": "minor",
-      "source": "FND-COMMIT-3eae194-8"
+      "source": "FND-COMMIT-3eae194-8",
+      "evidence": "src/app/api/games/route.js: GET wraps {ok:true, data:{games}}, POST wraps {ok:true, data:{id,state}}; src/app/api/games/[id]/route.js: GET wraps {ok:true, data:fullPayload(g)}, DELETE returns {ok:true,data:{}} on success; src/app/api/games/[id]/moves/route.js: GET wraps {ok:true, data:{history}}, POST success wraps {ok:true, data:{move,state}}; helper okResponse/errorResponse in all 3 route files; tests/api.test.js: 23 tests all asserting envelope shape; 100% stmts/branches/funcs/lines on all 3 route files"
     },
     {
       "id": "F-RVW-batch1-2",
@@ -426,9 +433,10 @@
     {
       "id": "F-INFRA-1",
       "title": "Stabilize test suite: bump tests/server.test.js timeout (or split pool) so concurrent ws.test.js Next compile doesn't flake server tests",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
-      "source": "FND-PHASE7-1"
+      "source": "FND-PHASE7-1",
+      "evidence": "Investigated over 15 runs: server.test.js tests without explicit timeout were taking 3-4s under serialized pool load (5s budget). maxForks:1 from ws-protocol-hardening eliminated parallel Next.js race conditions but not CPU contention during compilation. Bumped vi.setConfig testTimeout from 5000 to 10000 in tests/server.test.js as defensive margin. All 9 tests pass; suite stable."
     }
   ],
   "findings_log": [
@@ -480,18 +488,30 @@
       "outcome": "upgraded",
       "from_version": "15.1.6",
       "to_version": "15.5.18",
-      "audit_before": { "critical": 1, "high": 0, "moderate": 1, "low": 2, "total": 4 },
-      "audit_after": { "critical": 0, "high": 0, "moderate": 2, "low": 2, "total": 4 },
-      "remaining_moderate_notes": "postcss XSS (GHSA-qx2v-qp2m-jg93) fix requires Next 9.x major downgrade — not applicable. next moderate badge is an npm grouping artifact from the postcss transitive dep.",
+      "audit_before": {
+        "critical": 1,
+        "high": 0,
+        "moderate": 1,
+        "low": 2,
+        "total": 4
+      },
+      "audit_after": {
+        "critical": 0,
+        "high": 0,
+        "moderate": 2,
+        "low": 2,
+        "total": 4
+      },
+      "remaining_moderate_notes": "postcss XSS (GHSA-qx2v-qp2m-jg93) fix requires Next 9.x major downgrade \u2014 not applicable. next moderate badge is an npm grouping artifact from the postcss transitive dep.",
       "npm_test": "108 tests, 100% coverage, all passing",
-      "spec": "F-RVW-9d6491e-4 → done"
+      "spec": "F-RVW-9d6491e-4 \u2192 done"
     },
     {
       "id": "FND-COMMIT-c98f5ca-1",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
       "file": "server.js:32-34",
-      "problem": "server.listen Promise resolves only on 'listening'; no 'error' listener — port-bind failure (EADDRINUSE) hangs createApp() forever and never rejects.",
+      "problem": "server.listen Promise resolves only on 'listening'; no 'error' listener \u2014 port-bind failure (EADDRINUSE) hangs createApp() forever and never rejects.",
       "fix": "server.once('error', reject); server.once('listening', resolve); propagate to caller.",
       "resolution": "new-spec F-RVW-c98f5ca-1 + Phase 14"
     },
@@ -527,7 +547,7 @@
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
       "file": "src/lib/wsHandler.js:21-23 + server.js:22",
-      "problem": "?game=a&game=b yields query.game = ['a','b']; String(['a','b']) → 'a,b' silently coerces. Unknown query.as values fall through to auto-assign in joinSocket, contradicting the F-013 ?as=red|black|observer contract.",
+      "problem": "?game=a&game=b yields query.game = ['a','b']; String(['a','b']) \u2192 'a,b' silently coerces. Unknown query.as values fall through to auto-assign in joinSocket, contradicting the F-013 ?as=red|black|observer contract.",
       "fix": "Reject array query params (or coerce to first value); restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate query.as against {red, black, observer, ''}.",
       "resolution": "new-spec F-RVW-c98f5ca-5 + Phase 18"
     },
@@ -591,7 +611,7 @@
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
       "file": "src/lib/wsHandler.js (whole file)",
       "problem": "Confirming non-regression: c98f5ca does NOT accidentally fix F-RVW-9d6491e-2 (joinSocket idempotency); handler calls joinSocket exactly once per ws lifecycle. Phase 12 still required.",
-      "fix": "n/a — informational",
+      "fix": "n/a \u2014 informational",
       "resolution": "no-op (F-RVW-9d6491e-2 remains open under Phase 12)"
     },
     {
@@ -606,7 +626,7 @@
     {
       "id": "FND-COMMIT-3eae194-1",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/[id]/moves/route.js:18,23",
       "problem": "All four error flavors (missing fields, observer-cannot-move, not-your-turn, illegal-move) return HTTP 400 indistinguishably. CUA-readability gap.",
       "fix": "400 = malformed; 403 = observer; 409 = not-your-turn; 422 = illegal-move; stable error codes (E_MISSING_FIELDS, E_NOT_YOUR_TURN, E_ILLEGAL_MOVE, E_OBSERVER).",
@@ -615,7 +635,7 @@
     {
       "id": "FND-COMMIT-3eae194-2",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/route.js:15 + [id]/route.js:6,12 + moves route",
       "problem": "REST surface lacks gameId allowlist + length cap. Same gap covered for WS by Phase 18 (F-RVW-c98f5ca-5). DoS via 10 MB id keys.",
       "fix": "Shared validateGameId(id) helper applied at every entry to the store layer; reject 400 + E_INVALID_ID.",
@@ -624,16 +644,16 @@
     {
       "id": "FND-COMMIT-3eae194-3",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/route.js + src/app/api/games/[id]/route.js",
       "problem": "Spec drift: POST /api/games and DELETE /api/games/:id exist in code but are NOT in spec F-012 (whose title only mentions GET list/state/moves and POST move).",
-      "fix": "Extend F-012 with explicit semantics, or add new specs F-019 / F-020 (USE THESE EXACT IDS — if they collide with existing ones, bump to F-021 / F-022 and document the choice).",
+      "fix": "Extend F-012 with explicit semantics, or add new specs F-019 / F-020 (USE THESE EXACT IDS \u2014 if they collide with existing ones, bump to F-021 / F-022 and document the choice).",
       "resolution": "new-spec F-RVW-3eae194-3"
     },
     {
       "id": "FND-COMMIT-3eae194-4",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/[id]/route.js:11-14",
       "problem": "DELETE /api/games/:id calls resetGame but does NOT broadcast. WS observers see stale post-game state until next move.",
       "fix": "After resetGame(id), call broadcast(id, {type:'state', state: fullPayload(ensureGame(id))}).",
@@ -642,7 +662,7 @@
     {
       "id": "FND-COMMIT-3eae194-5",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "tests/api.test.js",
       "problem": "POST /moves tests do NOT assert that broadcast() was invoked. Coverage hits the line; behavior unverified.",
       "fix": "Spy on broadcast and assert called with correct payload on success; assert NOT called on rejection.",
@@ -651,7 +671,7 @@
     {
       "id": "FND-COMMIT-3eae194-6",
       "severity": "major",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "tests/api.test.js",
       "problem": "Multiple business behaviors not asserted: history grows by 1 after valid move; sequence of moves accumulates; gameOver path; malformed JSON body; observer-asymmetry between WS bucket model and REST role argument.",
       "fix": "Add 5 tests + spec entry documenting the WS-vs-REST role-source asymmetry.",
@@ -660,7 +680,7 @@
     {
       "id": "FND-COMMIT-3eae194-7",
       "severity": "minor",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/[id]/route.js:11-14",
       "problem": "DELETE on non-existent id calls ensureGame and CREATES the game. Surprising REST semantics.",
       "fix": "Gate on games.has(id) before reset; return 404 + E_NOT_FOUND otherwise.",
@@ -669,7 +689,7 @@
     {
       "id": "FND-COMMIT-3eae194-8",
       "severity": "minor",
-      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context \u2014 analysis performed inline at sonnet-grade rigor)",
       "file": "src/app/api/games/route.js + src/app/api/games/[id]/route.js + src/app/api/games/[id]/moves/route.js",
       "problem": "Inconsistent response envelopes ({id, state} vs {games} vs flat fullPayload vs {ok:true} vs {ok:bool, data?, error?}).",
       "fix": "Pick one envelope and apply uniformly; document in spec.",
@@ -680,18 +700,48 @@
       "source": "joinsocket-fix@cua-checkers (Phase 12)",
       "spec": "F-RVW-9d6491e-2",
       "outcome": "closed",
-      "fix": "src/lib/store.js line 58: `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws);` — returns existing role immediately, ignoring `wanted` on re-join",
+      "fix": "src/lib/store.js line 58: `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws);` \u2014 returns existing role immediately, ignoring `wanted` on re-join",
       "semantic_chosen": "return-existing-role (idempotent; does not switch role on second call regardless of `wanted` param)",
       "semantic_rationale": "Once a socket holds a seat it must not be evicted by a duplicate join; callers wanting a role change must leaveSocket first",
       "tests_added": [
         "joinSocket idempotency > double-join with same ws returns the same role both times",
         "joinSocket idempotency > double-join does not add the socket to a second role bucket",
         "joinSocket idempotency > leaveSocket after double-join clears all role slots cleanly",
-        "joinSocket idempotency > joinSocket(ws, 'red') then joinSocket(ws, 'black') keeps ws in red (idempotent — does not switch)",
-        "joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins — ws1 stays red, ws2 stays black, observer count 0"
+        "joinSocket idempotency > joinSocket(ws, 'red') then joinSocket(ws, 'black') keeps ws in red (idempotent \u2014 does not switch)",
+        "joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins \u2014 ws1 stays red, ws2 stays black, observer count 0"
       ],
       "commit": "5e174b0",
       "coverage": "store.js 100% statements/branches/functions/lines"
+    },
+    {
+      "id": "FND-CLOSURE-INFRA-1",
+      "source": "phase30-stability@cua-checkers",
+      "spec": "F-INFRA-1",
+      "outcome": "fixed",
+      "investigation": "15-run test of full suite: server.test.js passed in all runs but the unguarded tests (no explicit timeout override) were reaching 3-4s under serialized pool load with ws.test.js Next.js compile. maxForks:1 eliminated parallel races but not CPU contention during Next compilation. 5s budget insufficient.",
+      "fix": "tests/server.test.js line 6: vi.setConfig testTimeout 5000 -> 10000",
+      "coverage": "All 9 server.test.js tests pass; 100% coverage maintained."
+    },
+    {
+      "id": "FND-CLOSURE-phase27-envelope",
+      "source": "phase27-envelope@cua-checkers",
+      "spec": "F-RVW-3eae194-8",
+      "outcome": "closed",
+      "fix": "All six REST endpoints now return {ok:true, data:{...}} on success and {ok:false, error:{code,message}} on error. Helper functions okResponse/errorResponse extracted in each route file. tests/api.test.js updated to assert envelope shape on all endpoints (23 tests). CheckersClient.jsx uses WebSocket only \u2014 no REST fetch calls \u2014 no client-side impact.",
+      "tests_added": [
+        "GET /api/games > returns a list (possibly empty) \u2014 asserts ok:true, data.games",
+        "POST /api/games > creates a game with explicit id \u2014 asserts ok:true, data.id, data.state",
+        "POST /api/games > returns 200 when game already exists \u2014 asserts ok:true, data.id",
+        "POST /api/games > generates an id when body is empty \u2014 asserts ok:true, data.id",
+        "POST /api/games > subsequent GET returns created game \u2014 asserts data.games ids",
+        "GET /api/games/[id] > returns full payload \u2014 asserts ok:true, data.id, data.turn, data.pieces",
+        "DELETE /api/games/[id] > resets game \u2014 asserts {ok:true, data:{}}",
+        "GET /api/games/[id]/moves > returns empty history \u2014 asserts ok:true, data.history",
+        "POST /api/games/[id]/moves > valid move \u2014 asserts ok:true, data.move, data.state.turn",
+        "POST /api/games/[id]/moves > gameOver flag \u2014 asserts data.state.gameOver, data.state.winner"
+      ],
+      "coverage": "src/app/api/games/route.js 100% stmts/branches/funcs/lines; src/app/api/games/[id]/route.js 100%; src/app/api/games/[id]/moves/route.js 100%",
+      "client_impact": "CheckersClient.jsx does not consume REST endpoints (WebSocket-only); no follow-up needed"
     }
   ],
   "iterations": [],
@@ -745,7 +795,7 @@
       "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
       "file": "package.json / package-lock.json",
       "problem": "No findings.",
-      "fix": "n/a — informational",
+      "fix": "n/a \u2014 informational",
       "resolution": "clean: package.json/lockfile clean post-bump; no findings"
     },
     {
@@ -754,7 +804,7 @@
       "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
       "file": "src/lib/store.js",
       "problem": "No findings.",
-      "fix": "n/a — informational",
+      "fix": "n/a \u2014 informational",
       "resolution": "clean: joinSocket idempotency clean"
     },
     {
@@ -763,7 +813,7 @@
       "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
       "file": "tests/globalSetup.js + tests/server.test.js + tests/ws.test.js",
       "problem": "No findings.",
-      "fix": "n/a — informational",
+      "fix": "n/a \u2014 informational",
       "resolution": "clean: globalSetup.js / server.test.js / ws.test.js clean"
     },
     {
@@ -817,10 +867,26 @@
     },
     {
       "id": "FND-CLOSURE-3eae194-1-7",
-      "spec_ids": ["F-RVW-3eae194-1", "F-RVW-3eae194-2", "F-RVW-3eae194-3", "F-RVW-3eae194-4", "F-RVW-3eae194-5", "F-RVW-3eae194-6", "F-RVW-3eae194-7"],
-      "phase_ids": [20, 21, 22, 23, 24, 25, 26],
+      "spec_ids": [
+        "F-RVW-3eae194-1",
+        "F-RVW-3eae194-2",
+        "F-RVW-3eae194-3",
+        "F-RVW-3eae194-4",
+        "F-RVW-3eae194-5",
+        "F-RVW-3eae194-6",
+        "F-RVW-3eae194-7"
+      ],
+      "phase_ids": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26
+      ],
       "owner": "rest-hardening-recovery@cua-checkers",
-      "resolution": "Phase 20: moves/route.js now maps E_OBSERVER→403, E_NOT_YOUR_TURN→409, E_ILLEGAL_MOVE→422, E_MISSING_FIELDS/E_MALFORMED_JSON→400, each with {ok:false,error:{code,message}}. Phase 21: validateGameId() applied at all REST entry points (POST body id, all [id] path params); invalid→400+E_INVALID_ID. Phase 22: F-020 (POST /api/games) and F-021 (DELETE /api/games/:id) appended to specs.json. Phase 23: DELETE route calls broadcast(id,{type:'state',state:fullPayload(ensureGame(id))}) after resetGame, gated on gameExists. Phase 24: vi.spyOn(store,'broadcast') in all POST /moves + DELETE tests; success asserts called, rejection asserts not called. Phase 25: history length after 1 move, 3 moves, gameOver field present, malformed JSON→E_MALFORMED_JSON, WS-vs-REST role asymmetry documented. Phase 26: DELETE checks gameExists first; returns 404+E_NOT_FOUND if missing; idempotent create behavior removed. store.js gameExists(lines 104-106) now covered. 256 tests, 100% statements/branches/functions/lines on all changed files.",
+      "resolution": "Phase 20: moves/route.js now maps E_OBSERVER\u2192403, E_NOT_YOUR_TURN\u2192409, E_ILLEGAL_MOVE\u2192422, E_MISSING_FIELDS/E_MALFORMED_JSON\u2192400, each with {ok:false,error:{code,message}}. Phase 21: validateGameId() applied at all REST entry points (POST body id, all [id] path params); invalid\u2192400+E_INVALID_ID. Phase 22: F-020 (POST /api/games) and F-021 (DELETE /api/games/:id) appended to specs.json. Phase 23: DELETE route calls broadcast(id,{type:'state',state:fullPayload(ensureGame(id))}) after resetGame, gated on gameExists. Phase 24: vi.spyOn(store,'broadcast') in all POST /moves + DELETE tests; success asserts called, rejection asserts not called. Phase 25: history length after 1 move, 3 moves, gameOver field present, malformed JSON\u2192E_MALFORMED_JSON, WS-vs-REST role asymmetry documented. Phase 26: DELETE checks gameExists first; returns 404+E_NOT_FOUND if missing; idempotent create behavior removed. store.js gameExists(lines 104-106) now covered. 256 tests, 100% statements/branches/functions/lines on all changed files.",
       "status": "done"
     }
   ]

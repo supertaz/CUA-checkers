@@ -44,10 +44,10 @@
 - [x] Phase 24: broadcast spy assertion in api.test.js (F-RVW-3eae194-5) — `rest-hardening-recovery@cua-checkers`
 - [x] Phase 25: behavior assertions in api.test.js (F-RVW-3eae194-6) — `rest-hardening-recovery@cua-checkers`
 - [x] Phase 26: DELETE non-existent id → 404 (F-RVW-3eae194-7) — `rest-hardening-recovery@cua-checkers`
-- [⏸] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — blocked_by Phase 22
+- [x] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — `phase27-envelope@cua-checkers` {ok,data}/{ok,error} on all 6 REST endpoints
 - [x] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
 - [⏸] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — blocked_by Phase 15+17
-- [~] Phase 30: Stabilize test suite — per-file timeout / pool-split for tests/server.test.js (F-INFRA-1) — orchestrator will dispatch fixer
+- [x] Phase 30: Stabilize test suite — per-file timeout / pool-split for tests/server.test.js (F-INFRA-1) — bumped testTimeout 5000->10000 in tests/server.test.js
 
 ## Active workers
 
