@@ -195,10 +195,11 @@
     {
       "id": "F-RVW-c98f5ca-1",
       "title": "server.listen Promise must reject on EADDRINUSE/etc; currently single-listener resolve hangs forever on port-bind failure",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "Test that createApp({ port: occupiedPort }) rejects with the underlying error rather than hanging."
+      "evidence_required": "Test that createApp({ port: occupiedPort }) rejects with the underlying error rather than hanging.",
+      "evidence": "server.js: server.once('error', reject) + wss.close() wired in createApp listen promise; tests/server.test.js: 4 tests including EADDRINUSE rejection test; 100% coverage on server.js"
     },
     {
       "id": "F-RVW-c98f5ca-2",
@@ -211,10 +212,11 @@
     {
       "id": "F-RVW-c98f5ca-3",
       "title": "CLI bootstrap missing .catch on createApp and SIGTERM/SIGINT graceful shutdown for wss + server",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "SIGTERM closes the WebSocketServer and HTTP server before exit; createApp errors propagate to a non-zero exit."
+      "evidence_required": "SIGTERM closes the WebSocketServer and HTTP server before exit; createApp errors propagate to a non-zero exit.",
+      "evidence": "server.js CLI block: SIGTERM/SIGINT handlers call wss.close() then server.close() with 5s drain timeout; .catch(err => { console.error(err); process.exit(1); }) added; tests/server.test.js: graceful shutdown test verifies server.close + wss.close settle cleanly; 100% coverage on server.js"
     },
     {
       "id": "F-RVW-c98f5ca-4",
@@ -610,5 +612,23 @@
       "coverage": "store.js 100% statements/branches/functions/lines"
     }
   ],
-  "iterations": []
+  "iterations": [],
+  "findings_log_closures": [
+    {
+      "id": "FND-CLOSURE-c98f5ca-1",
+      "spec_id": "F-RVW-c98f5ca-1",
+      "phase_id": 14,
+      "owner": "server-bootstrap-hardening@cua-checkers",
+      "resolution": "server.once('error', reject) + wss.close() registered in createApp's listen Promise; rejects on EADDRINUSE instead of hanging. Test: tests/server.test.js 'createApp port-in-use rejects > rejects with EADDRINUSE when port is already bound'. server.js 100% coverage.",
+      "status": "done"
+    },
+    {
+      "id": "FND-CLOSURE-c98f5ca-3",
+      "spec_id": "F-RVW-c98f5ca-3",
+      "phase_id": 16,
+      "owner": "server-bootstrap-hardening@cua-checkers",
+      "resolution": "CLI block: .catch(err => { console.error(err); process.exit(1); }) added; SIGTERM/SIGINT handlers call wss.close() then server.close() with 5s drain timeout (setTimeout unref'd). Test: tests/server.test.js 'graceful shutdown > server.close and wss.close settle after createApp'. server.js 100% coverage.",
+      "status": "done"
+    }
+  ]
 }
