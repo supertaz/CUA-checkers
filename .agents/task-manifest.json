@@ -454,14 +454,12 @@
     {
       "id": 29,
       "title": "WS backpressure + heartbeat (F-RVW-batch1-3)",
-      "status": "todo",
+      "status": "done",
       "spec_refs": [
         "F-RVW-batch1-3"
       ],
-      "blocked_by": [
-        15,
-        17
-      ]
+      "blocked_by": [],
+      "evidence": "src/lib/wsHandler.js: WS_MAX_BUFFER (env WS_MAX_BUFFER, default 1 MiB), safeSend terminates slow consumers above threshold. server.js: heartbeat interval (WS_HEARTBEAT_MS env, default 30s, heartbeatMs param), ws.isAlive/pong handler in upgrade callback, interval clears on wss.close(). Tests: wsHandler.test.js 6 new backpressure unit tests; ws.test.js 3 heartbeat integration tests. 100% coverage on server.js and wsHandler.js. Commit: f644c5b."
     },
     {
       "id": 30,
@@ -501,7 +499,7 @@
         "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "ca98787",
+    "last_landed_commit": "f644c5b",
     "last_landed_phase": 26
   },
   "history": [
@@ -691,6 +689,10 @@
       "owner": "phase27-envelope@cua-checkers",
       "commit": "020b046",
       "new_specs": []
+    },
+    {
+      "event": "Phase 29 (WS backpressure + heartbeat, F-RVW-batch1-3) landed. WS_MAX_BUFFER backpressure guard in safeSend; ping/pong heartbeat in createApp; 6 wsHandler unit tests + 3 ws integration tests; 100% coverage on server.js and wsHandler.js.",
+      "commit": "f644c5b"
     }
   ]
 }

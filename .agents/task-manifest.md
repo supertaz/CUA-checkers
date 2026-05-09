@@ -46,7 +46,7 @@
 - [x] Phase 26: DELETE non-existent id → 404 (F-RVW-3eae194-7) — `rest-hardening-recovery@cua-checkers`
 - [x] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — `phase27-envelope@cua-checkers` {ok,data}/{ok,error} on all 6 REST endpoints
 - [x] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
-- [⏸] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — blocked_by Phase 15+17
+- [x] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — commit `f644c5b`
 - [x] Phase 30: Stabilize test suite — per-file timeout / pool-split for tests/server.test.js (F-INFRA-1) — bumped testTimeout 5000->10000 in tests/server.test.js
 
 ## Active workers
@@ -57,4 +57,4 @@
 
 ## Last landed commit
 
-`9f2abf0` — Phase 28 (shutdown-recovery): async graceful shutdown export in server.js; SIGTERM/SIGINT wiring; 5 shutdown() tests; server.js 100% coverage all metrics.
+`f644c5b` — Phase 29 (backpressure+heartbeat): WS_MAX_BUFFER safeSend guard + ping/pong heartbeat in createApp; 6 wsHandler unit tests + 3 ws integration tests; 100% coverage on server.js and wsHandler.js.

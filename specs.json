@@ -426,9 +426,10 @@
     {
       "id": "F-RVW-batch1-3",
       "title": "WS backpressure cap + ping/pong heartbeat; drop slow consumers",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
-      "source": "FND-COMMIT-batch1-3"
+      "source": "FND-COMMIT-batch1-3",
+      "evidence": "src/lib/wsHandler.js: WS_MAX_BUFFER constant (env WS_MAX_BUFFER, default 1 MiB); safeSend checks ws.bufferedAmount > WS_MAX_BUFFER and calls ws.terminate() on slow consumers. server.js: heartbeat interval (env WS_HEARTBEAT_MS, default 30s, overrideable via createApp({heartbeatMs})); ws.isAlive=true set on upgrade callback; ws.on('pong') resets isAlive; interval terminates clients with isAlive=false and pings live ones; cleared on wss.close(). tests/wsHandler.test.js: 6 new unit tests covering backpressure (WS_MAX_BUFFER export, terminate on overflow, threshold boundary, close-handler cleanup, readyState skip, undefined-bufferedAmount fallback). tests/ws.test.js: 3 integration tests (ping within 400ms, raw-TCP unresponsive client terminated, responsive client stays alive). 100% stmts/branches/funcs/lines on server.js and wsHandler.js. Commit f644c5b."
     },
     {
       "id": "F-INFRA-1",
@@ -742,6 +743,30 @@
       ],
       "coverage": "src/app/api/games/route.js 100% stmts/branches/funcs/lines; src/app/api/games/[id]/route.js 100%; src/app/api/games/[id]/moves/route.js 100%",
       "client_impact": "CheckersClient.jsx does not consume REST endpoints (WebSocket-only); no follow-up needed"
+    },
+    {
+      "id": "FND-CLOSURE-batch1-3",
+      "source": "phase29-backpressure@cua-checkers",
+      "spec": "F-RVW-batch1-3",
+      "outcome": "closed",
+      "fix": "src/lib/wsHandler.js: WS_MAX_BUFFER constant (env WS_MAX_BUFFER, default 1 MiB); safeSend checks ws.bufferedAmount > WS_MAX_BUFFER, calls ws.terminate() on slow consumer (close handler runs leaveSocket). server.js: heartbeat interval (WS_HEARTBEAT_MS env, default 30s, createApp({heartbeatMs}) override); ws.isAlive=true set in upgrade callback; ws.on(pong) resets isAlive; interval terminates isAlive=false clients and pings live ones; cleared on wss.close().",
+      "tests_added": [
+        "handleSocket: backpressure (Phase 29) > WS_MAX_BUFFER is exported and equals process.env.WS_MAX_BUFFER or 1 MiB default",
+        "handleSocket: backpressure (Phase 29) > safeSend terminates slow consumer and skips send when bufferedAmount exceeds threshold",
+        "handleSocket: backpressure (Phase 29) > safeSend does not terminate ws when bufferedAmount is exactly at threshold",
+        "handleSocket: backpressure (Phase 29) > terminated slow consumer is removed from store via close handler",
+        "handleSocket: backpressure (Phase 29) > safeSend skips send to ws with readyState !== 1 (existing behaviour preserved)",
+        "handleSocket: backpressure (Phase 29) > safeSend treats undefined bufferedAmount (no property) as 0 and sends normally",
+        "heartbeat (Phase 29) > server sends ping frames within ~400ms of connection",
+        "heartbeat (Phase 29) > unresponsive client (raw TCP, no pong) is terminated within 5 heartbeat intervals",
+        "heartbeat (Phase 29) > responsive client (pong sent) is kept alive across multiple heartbeat intervals"
+      ],
+      "env_vars": [
+        "WS_MAX_BUFFER (wsHandler.js, default 1048576)",
+        "WS_HEARTBEAT_MS (server.js, default 30000)"
+      ],
+      "commit": "f644c5b",
+      "coverage": "server.js 100% stmts/branches/funcs/lines; wsHandler.js 100% stmts/branches/funcs/lines"
     }
   ],
   "iterations": [],
