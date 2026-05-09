@@ -689,7 +689,7 @@
       ],
       "event": "Response envelope normalization: all six REST endpoints now return {ok:true, data:{...}} on success and {ok:false, error:{code,message}} on error. okResponse/errorResponse helpers extracted in all 3 route files. tests/api.test.js updated to 23 tests asserting new envelope shape. CheckersClient.jsx confirmed WebSocket-only (no REST fetch). 100% stmts/branches/funcs/lines on all changed route files.",
       "owner": "phase27-envelope@cua-checkers",
-      "commit": "pending",
+      "commit": "020b046",
       "new_specs": []
     }
   ]
