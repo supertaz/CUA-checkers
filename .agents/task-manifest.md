@@ -29,14 +29,14 @@
 - [♻] Phase 9: pre-push codex adversarial review (R-301) — gpt-5.5 high via `codex:codex-rescue` subagent
 - [⏸] Phase 10: push to origin when all gates green — blocked by Phase 9
 - [♻] Phase 11: iterate on findings — perpetual until specs.json fully green
-- [⏸] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — blocked by Phase 4
+- [x] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — commit `5e174b0` (`joinsocket-fix@cua-checkers`)
 - [x] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
-- [ ] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — blocked by Phase 4
-- [ ] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — blocked by Phase 4
-- [ ] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — blocked by Phase 4
-- [ ] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — blocked by Phase 4
-- [ ] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — blocked by Phase 4
-- [ ] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — blocked by Phase 4
+- [>] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — `server-bootstrap-hardening@cua-checkers`
+- [⏸] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
+- [>] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — `server-bootstrap-hardening@cua-checkers`
+- [⏸] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
+- [⏸] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
+- [⏸] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
 
 ## Active workers
 
@@ -46,4 +46,4 @@
 
 ## Last landed commit
 
-`3eae194` — REST API TDD routes (Phase 5): 13 tests, 100% coverage, F-012 + Q-204 done.
+`5e174b0` — joinSocket idempotency fix (Phase 12): 5 new tests (38 total in store.test.js), store.js 100% coverage, F-RVW-9d6491e-2 done.

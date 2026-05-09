@@ -135,10 +135,12 @@
     {
       "id": 12,
       "title": "Fix store.joinSocket idempotency (F-RVW-9d6491e-2)",
-      "status": "deferred",
+      "status": "done",
       "blocked_by": [4],
       "spec_refs": ["F-RVW-9d6491e-2"],
-      "details": "Clear previous role membership for a socket before reassigning, or return the current role when the socket is already registered. Phase 4 should land first since server-impl touches adjacent code."
+      "details": "Clear previous role membership for a socket before reassigning, or return the current role when the socket is already registered. Phase 4 should land first since server-impl touches adjacent code.",
+      "evidence": "commit 5e174b0 — store.js early-return on rolesByWs.has(ws); 5 new idempotency tests added to tests/store.test.js (38 total); store.js 100% coverage",
+      "owner": "joinsocket-fix@cua-checkers"
     },
     {
       "id": 13,
@@ -214,7 +216,7 @@
         "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "3eae194"
+    "last_landed_commit": "5e174b0"
   },
   "history": [
     {
@@ -269,6 +271,12 @@
       "phase_id": 13,
       "event": "Next.js advisory audit complete: bumped next 15.1.6 → 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1→0, high 0→0. 108 tests, 100% coverage. F-RVW-9d6491e-4 → done.",
       "owner": "security-audit@cua-checkers"
+    },
+    {
+      "phase_id": 12,
+      "event": "joinSocket idempotency fix landed; F-RVW-9d6491e-2 done; 5 new tests added (38 total in store.test.js); store.js 100% coverage; semantic chosen: return-existing-role on same-ws re-join",
+      "commit": "5e174b0",
+      "owner": "joinsocket-fix@cua-checkers"
     }
   ]
 }

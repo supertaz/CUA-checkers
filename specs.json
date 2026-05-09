@@ -179,10 +179,10 @@
     {
       "id": "F-RVW-9d6491e-2",
       "title": "joinSocket idempotency: same WebSocket joining twice must not occupy multiple roles",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
-      "evidence_required": "store.js test asserting double-join returns existing role and does not duplicate membership"
+      "evidence": "commit 5e174b0 — store.js line 58 early-return `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws)`; tests: 'joinSocket idempotency > double-join with same ws returns the same role both times', 'joinSocket idempotency > double-join does not add the socket to a second role bucket', 'joinSocket idempotency > leaveSocket after double-join clears all role slots cleanly', 'joinSocket idempotency > joinSocket(ws, \"red\") then joinSocket(ws, \"black\") keeps ws in red (idempotent — does not switch)', 'joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins — ws1 stays red, ws2 stays black, observer count 0'; store.js at 100% coverage"
     },
     {
       "id": "F-RVW-9d6491e-4",
@@ -288,6 +288,62 @@
       "status": "todo",
       "severity": "note",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+    },
+    {
+      "id": "F-RVW-3eae194-1",
+      "title": "All four /moves error flavors return HTTP 400 indistinguishably; CUA-readability gap",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-1"
+    },
+    {
+      "id": "F-RVW-3eae194-2",
+      "title": "REST surface lacks gameId allowlist + length cap — DoS via 10 MB id keys",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-2"
+    },
+    {
+      "id": "F-RVW-3eae194-3",
+      "title": "Spec drift: POST /api/games and DELETE /api/games/:id exist in code but are absent from spec F-012",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-3"
+    },
+    {
+      "id": "F-RVW-3eae194-4",
+      "title": "DELETE /api/games/:id calls resetGame but does NOT broadcast; WS observers see stale state",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-4"
+    },
+    {
+      "id": "F-RVW-3eae194-5",
+      "title": "POST /moves tests do not assert broadcast() was invoked — coverage hits the line, behavior unverified",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-5"
+    },
+    {
+      "id": "F-RVW-3eae194-6",
+      "title": "Multiple business behaviors unasserted in api.test.js: history growth, accumulation, gameOver, malformed JSON, WS-vs-REST role asymmetry",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-3eae194-6"
+    },
+    {
+      "id": "F-RVW-3eae194-7",
+      "title": "DELETE on non-existent id calls ensureGame and CREATES the game — surprising REST semantics",
+      "status": "todo",
+      "severity": "minor",
+      "source": "FND-COMMIT-3eae194-7"
+    },
+    {
+      "id": "F-RVW-3eae194-8",
+      "title": "Inconsistent response envelopes across all three route files",
+      "status": "todo",
+      "severity": "minor",
+      "source": "FND-COMMIT-3eae194-8"
     }
   ],
   "findings_log": [
@@ -461,6 +517,96 @@
       "problem": "CLI guard (process.argv[1] === new URL(import.meta.url).pathname) does not handle symlinked invocation; rare but a known footgun.",
       "fix": "Use es-main pattern or pathToFileURL(process.argv[1]).href === import.meta.url.",
       "resolution": "new-spec F-RVW-c98f5ca-13"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-1",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/[id]/moves/route.js:18,23",
+      "problem": "All four error flavors (missing fields, observer-cannot-move, not-your-turn, illegal-move) return HTTP 400 indistinguishably. CUA-readability gap.",
+      "fix": "400 = malformed; 403 = observer; 409 = not-your-turn; 422 = illegal-move; stable error codes (E_MISSING_FIELDS, E_NOT_YOUR_TURN, E_ILLEGAL_MOVE, E_OBSERVER).",
+      "resolution": "new-spec F-RVW-3eae194-1"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-2",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/route.js:15 + [id]/route.js:6,12 + moves route",
+      "problem": "REST surface lacks gameId allowlist + length cap. Same gap covered for WS by Phase 18 (F-RVW-c98f5ca-5). DoS via 10 MB id keys.",
+      "fix": "Shared validateGameId(id) helper applied at every entry to the store layer; reject 400 + E_INVALID_ID.",
+      "resolution": "new-spec F-RVW-3eae194-2"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-3",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/route.js + src/app/api/games/[id]/route.js",
+      "problem": "Spec drift: POST /api/games and DELETE /api/games/:id exist in code but are NOT in spec F-012 (whose title only mentions GET list/state/moves and POST move).",
+      "fix": "Extend F-012 with explicit semantics, or add new specs F-019 / F-020 (USE THESE EXACT IDS — if they collide with existing ones, bump to F-021 / F-022 and document the choice).",
+      "resolution": "new-spec F-RVW-3eae194-3"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-4",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/[id]/route.js:11-14",
+      "problem": "DELETE /api/games/:id calls resetGame but does NOT broadcast. WS observers see stale post-game state until next move.",
+      "fix": "After resetGame(id), call broadcast(id, {type:'state', state: fullPayload(ensureGame(id))}).",
+      "resolution": "new-spec F-RVW-3eae194-4"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-5",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "tests/api.test.js",
+      "problem": "POST /moves tests do NOT assert that broadcast() was invoked. Coverage hits the line; behavior unverified.",
+      "fix": "Spy on broadcast and assert called with correct payload on success; assert NOT called on rejection.",
+      "resolution": "new-spec F-RVW-3eae194-5"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-6",
+      "severity": "major",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "tests/api.test.js",
+      "problem": "Multiple business behaviors not asserted: history grows by 1 after valid move; sequence of moves accumulates; gameOver path; malformed JSON body; observer-asymmetry between WS bucket model and REST role argument.",
+      "fix": "Add 5 tests + spec entry documenting the WS-vs-REST role-source asymmetry.",
+      "resolution": "new-spec F-RVW-3eae194-6"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-7",
+      "severity": "minor",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/[id]/route.js:11-14",
+      "problem": "DELETE on non-existent id calls ensureGame and CREATES the game. Surprising REST semantics.",
+      "fix": "Gate on games.has(id) before reset; return 404 + E_NOT_FOUND otherwise.",
+      "resolution": "new-spec F-RVW-3eae194-7"
+    },
+    {
+      "id": "FND-COMMIT-3eae194-8",
+      "severity": "minor",
+      "source": "codex-reviewer-phase5 inline review (Phase-8 R-300; codex-rescue nested codex invocation was unavailable from team-teammate context — analysis performed inline at sonnet-grade rigor)",
+      "file": "src/app/api/games/route.js + src/app/api/games/[id]/route.js + src/app/api/games/[id]/moves/route.js",
+      "problem": "Inconsistent response envelopes ({id, state} vs {games} vs flat fullPayload vs {ok:true} vs {ok:bool, data?, error?}).",
+      "fix": "Pick one envelope and apply uniformly; document in spec.",
+      "resolution": "new-spec F-RVW-3eae194-8"
+    },
+    {
+      "id": "FND-CLOSURE-9d6491e-2",
+      "source": "joinsocket-fix@cua-checkers (Phase 12)",
+      "spec": "F-RVW-9d6491e-2",
+      "outcome": "closed",
+      "fix": "src/lib/store.js line 58: `if (g.rolesByWs.has(ws)) return g.rolesByWs.get(ws);` — returns existing role immediately, ignoring `wanted` on re-join",
+      "semantic_chosen": "return-existing-role (idempotent; does not switch role on second call regardless of `wanted` param)",
+      "semantic_rationale": "Once a socket holds a seat it must not be evicted by a duplicate join; callers wanting a role change must leaveSocket first",
+      "tests_added": [
+        "joinSocket idempotency > double-join with same ws returns the same role both times",
+        "joinSocket idempotency > double-join does not add the socket to a second role bucket",
+        "joinSocket idempotency > leaveSocket after double-join clears all role slots cleanly",
+        "joinSocket idempotency > joinSocket(ws, 'red') then joinSocket(ws, 'black') keeps ws in red (idempotent — does not switch)",
+        "joinSocket idempotency > ws1 joins red, ws2 joins black, ws1 rejoins — ws1 stays red, ws2 stays black, observer count 0"
+      ],
+      "commit": "5e174b0",
+      "coverage": "store.js 100% statements/branches/functions/lines"
     }
   ],
   "iterations": []
