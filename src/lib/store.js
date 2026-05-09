@@ -101,16 +101,21 @@ export function broadcast(gameId, payload) {
   }
 }
 
+export function gameExists(id) {
+  return games.has(id);
+}
+
 export function attemptMove(gameId, role, from, to) {
   const g = ensureGame(gameId);
   if (role !== RED && role !== BLACK) {
-    return { ok: false, error: "observer-cannot-move" };
+    // WS path uses error as a plain string code; REST path wraps into {code, message}
+    return { ok: false, error: "observer-cannot-move", code: "E_OBSERVER" };
   }
   if (role !== g.state.turn) {
-    return { ok: false, error: `not-your-turn (current: ${g.state.turn}, you: ${role})` };
+    return { ok: false, error: `not-your-turn (current: ${g.state.turn}, you: ${role})`, code: "E_NOT_YOUR_TURN" };
   }
   const result = tryMove(g.state, from, to);
-  if (!result.ok) return result;
+  if (!result.ok) return { ok: false, error: result.error, code: "E_ILLEGAL_MOVE" };
   g.snapshots.push(g.state);
   g.state = result.newState;
   return { ok: true, move: result.move };
