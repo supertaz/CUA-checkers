@@ -200,6 +200,21 @@
     </div>
 
     <div class="panel">
+      <h2>DISPLAY</h2>
+      <label for="hint-mode">Move hints (green/red dots)</label>
+      <select id="hint-mode">
+        <option value="always" selected>Always show</option>
+        <option value="off">Off</option>
+        <option value="first">First N moves only</option>
+      </select>
+      <div id="hint-n-wrap" style="display:none; margin-top:6px;">
+        <label for="hint-n">N (full moves)</label>
+        <input id="hint-n" type="number" min="1" max="200" value="5"
+               style="background:#333;color:var(--text);border:1px solid #555;padding:6px 8px;border-radius:4px;font-family:inherit;width:100%;">
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>MOVE HISTORY</h2>
       <div id="history"></div>
     </div>
@@ -273,7 +288,6 @@
     const dirs = pieceDirs(piece);
 
     function recurse(curR, curC, curPiece, captured, path, workBoard) {
-      let extended = false;
       for (const [dr, dc] of dirs) {
         const mr = curR + dr, mc = curC + dc;
         const lr = curR + 2*dr, lc = curC + 2*dc;
@@ -281,14 +295,11 @@
         const mid = workBoard[mr][mc];
         if (!mid || mid.color === curPiece.color) continue;
         if (workBoard[lr][lc]) continue;
-        // capture this piece
         const capCoord = rcToCoord(mr, mc);
         if (captured.includes(capCoord)) continue;
-        extended = true;
         const nextBoard = cloneBoard(workBoard);
         nextBoard[mr][mc] = null;
         nextBoard[curR][curC] = null;
-        // promotion mid-jump stops further jumps in American rules
         let promotedNow = false;
         let landedPiece = { color: curPiece.color, king: curPiece.king };
         if (!landedPiece.king) {
@@ -298,35 +309,19 @@
         nextBoard[lr][lc] = landedPiece;
         const newPath = path.concat([rcToCoord(lr, lc)]);
         const newCaps = captured.concat([capCoord]);
-        // If just promoted, stop here per American rules.
-        if (promotedNow) {
-          results.push({
-            from: path[0],
-            to: rcToCoord(lr, lc),
-            path: newPath,
-            captured: newCaps,
-            kinged: true,
-            isCapture: true
-          });
-        } else {
-          // try to extend; if cannot extend, record terminal sequence
-          const before = results.length;
+        // record every reachable jump endpoint, so player may halt the chain anywhere
+        results.push({
+          from: path[0],
+          to: rcToCoord(lr, lc),
+          path: newPath,
+          captured: newCaps,
+          kinged: promotedNow,
+          isCapture: true
+        });
+        if (!promotedNow) {
           recurse(lr, lc, landedPiece, newCaps, newPath, nextBoard);
-          // if recursive call added nothing further, record this as terminal
-          // (we detect by seeing if any further extension occurred — handled below)
-          if (results.length === before) {
-            results.push({
-              from: path[0],
-              to: rcToCoord(lr, lc),
-              path: newPath,
-              captured: newCaps,
-              kinged: false,
-              isCapture: true
-            });
-          }
         }
       }
-      return extended;
     }
 
     recurse(r, c, piece, [], [rcToCoord(r,c)], board);
@@ -357,28 +352,18 @@
   }
 
   function legalMovesFor(state, color) {
-    const captures = [];
-    const simples = [];
+    // Permissive rules: captures are NOT forced; simple and capture moves are
+    // both available. Multi-jump chains may be halted at any reachable square.
+    const moves = [];
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
         const p = state.board[r][c];
         if (!p || p.color !== color) continue;
-        captures.push(...findCaptureSequences(state.board, r, c, p));
+        moves.push(...findCaptureSequences(state.board, r, c, p));
+        moves.push(...findSimpleMoves(state.board, r, c, p));
       }
     }
-    if (captures.length > 0) {
-      // forced capture: only capture moves are legal.
-      // Standard American: any capture move is allowed (no longest-jump rule).
-      return captures;
-    }
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const p = state.board[r][c];
-        if (!p || p.color !== color) continue;
-        simples.push(...findSimpleMoves(state.board, r, c, p));
-      }
-    }
-    return simples;
+    return moves;
   }
 
   // ---------- game state ----------
@@ -540,12 +525,26 @@
 
   // ---------- rendering ----------
   const boardEl = document.getElementById("board");
+  function hintsEnabled() {
+    const modeEl = document.getElementById("hint-mode");
+    if (!modeEl) return true;
+    const mode = modeEl.value;
+    if (mode === "off") return false;
+    if (mode === "always") return true;
+    if (mode === "first") {
+      const n = parseInt(document.getElementById("hint-n").value, 10);
+      if (!Number.isFinite(n) || n < 1) return false;
+      return game.moveNumber <= n;
+    }
+    return true;
+  }
   function render() {
     boardEl.innerHTML = "";
     const legalMoves = game.over ? [] : legalMovesFor(game, game.turn);
     const selectedMoves = game.selected
       ? legalMoves.filter(m => m.from === game.selected)
       : [];
+    const showHints = hintsEnabled();
 
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
@@ -587,8 +586,10 @@
         if (game.selected === coord) sq.classList.add("selected");
         const targetMove = selectedMoves.find(m => m.to === coord);
         if (targetMove) {
-          sq.classList.add(targetMove.isCapture ? "legal-capture" : "legal-move");
           sq.dataset.legalTarget = "1";
+          if (showHints) {
+            sq.classList.add(targetMove.isCapture ? "legal-capture" : "legal-move");
+          }
         }
         if (game.lastMove) {
           if (game.lastMove.from === coord) sq.classList.add("last-from");
@@ -660,16 +661,12 @@
     if (game.over) return;
     const [r, c] = coordToRC(coord);
     const piece = game.board[r][c];
-    const legal = legalMovesFor(game, game.turn);
 
-    // if a piece of current color clicked, select it
+    // click own piece: select it (always allowed; no forced-capture filter)
     if (piece && piece.color === game.turn) {
-      const has = legal.some(m => m.from === coord);
-      if (has) {
-        game.selected = coord;
-        render();
-        return;
-      }
+      game.selected = coord;
+      render();
+      return;
     }
     // otherwise treat as target
     if (game.selected) {
@@ -677,7 +674,6 @@
       if (res.ok) {
         game.selected = null;
       } else {
-        // click empty/own square: clear selection
         game.selected = null;
         render();
       }
@@ -695,6 +691,16 @@
     btn.textContent = "Copied";
     setTimeout(() => btn.textContent = orig, 1000);
   });
+
+  const hintModeEl = document.getElementById("hint-mode");
+  const hintNWrap = document.getElementById("hint-n-wrap");
+  const hintNEl = document.getElementById("hint-n");
+  function syncHintUI() {
+    hintNWrap.style.display = hintModeEl.value === "first" ? "" : "none";
+  }
+  hintModeEl.addEventListener("change", () => { syncHintUI(); render(); });
+  hintNEl.addEventListener("input", () => { render(); });
+  syncHintUI();
 
   // ---------- public API ----------
   window.checkers = {
