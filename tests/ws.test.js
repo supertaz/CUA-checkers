@@ -552,6 +552,73 @@ describe('Origin allowlist (Phase 15)', () => {
 });
 
 // -----------------------------------------------------------------------
+// Same-origin auto-allow
+// -----------------------------------------------------------------------
+describe('same-origin auto-allow', () => {
+  // Uses raw TCP so we can set both Origin and Host headers explicitly.
+  function rawUpgradeWithHost(p, origin, hostHeader) {
+    return new Promise((resolve) => {
+      import('node:net').then(({ connect: tcpConnect }) => {
+        const socket = tcpConnect(p, 'localhost');
+        let buf = '';
+        socket.once('connect', () => {
+          const headers = [
+            `GET /ws?game=same-origin-test HTTP/1.1`,
+            `Host: ${hostHeader}`,
+            'Upgrade: websocket',
+            'Connection: Upgrade',
+            'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==',
+            'Sec-WebSocket-Version: 13',
+          ];
+          if (origin) headers.push(`Origin: ${origin}`);
+          socket.write(headers.join('\r\n') + '\r\n\r\n');
+        });
+        socket.on('data', (chunk) => {
+          buf += chunk.toString();
+          if (buf.includes('\r\n')) {
+            const statusLine = buf.split('\r\n')[0] ?? '';
+            const code = parseInt(statusLine.split(' ')[1] ?? '0', 10);
+            socket.destroy();
+            resolve({ statusCode: code, raw: buf });
+          }
+        });
+        socket.on('close', () => {
+          const statusLine = buf.split('\r\n')[0] ?? '';
+          const code = parseInt(statusLine.split(' ')[1] ?? '0', 10);
+          resolve({ statusCode: code, raw: buf });
+        });
+        socket.on('error', () => resolve({ statusCode: 0, raw: buf }));
+        setTimeout(() => { socket.destroy(); }, 3000);
+      });
+    });
+  }
+
+  test('same-origin request (Origin host matches Host header) is permitted regardless of ALLOWED_ORIGINS', async () => {
+    const saved = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'http://allowed.example.com';
+    try {
+      // Origin host is test.example.com; Host header is also test.example.com — same-origin
+      const result = await rawUpgradeWithHost(port, 'https://test.example.com', 'test.example.com');
+      expect(result.statusCode).toBe(101);
+    } finally {
+      process.env.ALLOWED_ORIGINS = saved;
+    }
+  });
+
+  test('cross-origin request (Origin host differs from Host header) is rejected with 403', async () => {
+    const saved = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'http://allowed.example.com';
+    try {
+      // Origin host is evil.example.com; Host header is localhost:<port> — cross-origin, not in allowlist
+      const result = await rawUpgradeWithHost(port, 'https://evil.example.com', `localhost:${port}`);
+      expect(result.statusCode).toBe(403);
+    } finally {
+      process.env.ALLOWED_ORIGINS = saved;
+    }
+  });
+});
+
+// -----------------------------------------------------------------------
 // Phase 17: payload cap
 // -----------------------------------------------------------------------
 describe('payload cap (Phase 17)', () => {

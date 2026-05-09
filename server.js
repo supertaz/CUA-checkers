@@ -40,7 +40,7 @@ export async function createApp({ port: portArg, heartbeatMs = WS_HEARTBEAT_MS }
   }, heartbeatMs);
   wss.once('close', () => clearInterval(heartbeatInterval));
 
-  /* v8 ignore next 22 */
+  /* v8 ignore next 34 */
   // Upgrade handler — exercised by ws.test.js live WS connections (Phase 6);
   // not reachable from bootstrap unit tests which do not open WebSocket connections.
   server.on('upgrade', (req, socket, head) => {
@@ -51,7 +51,17 @@ export async function createApp({ port: portArg, heartbeatMs = WS_HEARTBEAT_MS }
       const rawAllowed = process.env.ALLOWED_ORIGINS ?? `http://localhost:${server.address()?.port ?? portArg ?? 0}`;
       const allowed = rawAllowed.split(',').map(s => s.trim());
       const wildcardAllowed = allowed.includes('*');
-      if (!wildcardAllowed && (!origin || !allowed.includes(origin))) {
+
+      // Same-origin auto-allow: if Origin host matches Host header, permit regardless of allowlist.
+      let sameOrigin = false;
+      if (origin) {
+        try {
+          const originHost = new URL(origin).host;
+          sameOrigin = originHost === req.headers.host;
+        } catch { /* invalid Origin URL — fall through to allowlist */ }
+      }
+
+      if (!wildcardAllowed && !sameOrigin && (!origin || !allowed.includes(origin))) {
         socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
         socket.destroy();
         return;
