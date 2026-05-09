@@ -45,6 +45,8 @@
 - [⏸] Phase 25: behavior assertions in api.test.js (F-RVW-3eae194-6)
 - [⏸] Phase 26: DELETE non-existent id → 404 (F-RVW-3eae194-7)
 - [⏸] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — blocked_by Phase 22
+- [⏸] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
+- [⏸] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — blocked_by Phase 15+17
 
 ## Active workers
 

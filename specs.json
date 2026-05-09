@@ -204,10 +204,11 @@
     {
       "id": "F-RVW-c98f5ca-2",
       "title": "/ws upgrade lacks Origin allowlist (CSWSH risk: any cross-site browser context can claim red role on dev server)",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "Test that an upgrade with a disallowed Origin header is rejected with 403 + socket.destroy."
+      "evidence_required": "Test that an upgrade with a disallowed Origin header is rejected with 403 + socket.destroy.",
+      "evidence": "server.js: reads ALLOWED_ORIGINS env (comma-sep, default http://localhost:<port>); rejects missing/disallowed origin with HTTP/1.1 403 + socket.destroy() before wss.handleUpgrade; ALLOWED_ORIGINS=* bypasses check. Tests in tests/ws.test.js: 'connection without Origin is rejected when allowlist is specific (not *)', 'connection with disallowed Origin is rejected with 403', 'connection with allowed Origin succeeds', 'wildcard ALLOWED_ORIGINS=* accepts connection without Origin header'. server.js 100% coverage. Commit: a3bffc6"
     },
     {
       "id": "F-RVW-c98f5ca-3",
@@ -221,18 +222,20 @@
     {
       "id": "F-RVW-c98f5ca-4",
       "title": "WebSocket payload not size-bounded (default ws maxPayload = 100 MiB); no rate limit on reset/undo control messages",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "WebSocketServer constructed with maxPayload ≤ 8 KiB; per-socket token bucket gates reset/undo (e.g. 1 op / 2 s); test asserting an oversize frame is rejected."
+      "evidence_required": "WebSocketServer constructed with maxPayload ≤ 8 KiB; per-socket token bucket gates reset/undo (e.g. 1 op / 2 s); test asserting an oversize frame is rejected.",
+      "evidence": "server.js: WebSocketServer({ noServer: true, maxPayload: 8*1024 }) (WS_MAX_PAYLOAD env override). wsHandler.js: per-socket token bucket, 10 ops/5 s (WS_RATE_LIMIT_OPS, WS_RATE_LIMIT_WINDOW_MS env); applies to move/reset/undo; not malformed JSON; bucket cleaned on close. ws.on('error') installed to suppress uncaught WS_ERR_UNSUPPORTED_MESSAGE_LENGTH. Tests: 'oversized frame (>8 KiB) causes server to close connection', 'sending 12 moves rapidly yields at least 2 E_RATE_LIMIT errors'. wsHandler.js + server.js 100% coverage. Commit: a3bffc6"
     },
     {
       "id": "F-RVW-c98f5ca-5",
       "title": "wsHandler/server do not validate query.game and query.as: array values silently coerce, unknown 'as' values fall through to auto-assign",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "Tests for ?game=a&game=b (array), bad-char gameIds, ?as=Red (case), ?as=x (invalid). Expect rejection or normalized first-value behavior with explicit error frame."
+      "evidence_required": "Tests for ?game=a&game=b (array), bad-char gameIds, ?as=Red (case), ?as=x (invalid). Expect rejection or normalized first-value behavior with explicit error frame.",
+      "evidence": "validateGameId(id) exported from store.js (^[A-Za-z0-9_-]{1,64}$). wsHandler.js: array game coerced to first element, validated; invalid→E_INVALID_GAMEID + ws.close(1008). query.as validated against {''|red|black|observer}; invalid→E_INVALID_ROLE + ws.close(1008). Tests: 'invalid gameId', 'empty gameId', 'array game param coerced', 'gameId too long', 'invalid as value', 'as=x invalid', 'as=observer/red/black valid', 'array as coerced'. wsHandler.js 100% coverage. Commit: a3bffc6"
     },
     {
       "id": "F-RVW-c98f5ca-6",
@@ -347,6 +350,20 @@
       "status": "todo",
       "severity": "minor",
       "source": "FND-COMMIT-3eae194-8"
+    },
+    {
+      "id": "F-RVW-batch1-2",
+      "title": "Async graceful shutdown: await wss.close() + drain ws clients before process.exit",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-batch1-2"
+    },
+    {
+      "id": "F-RVW-batch1-3",
+      "title": "WS backpressure cap + ping/pong heartbeat; drop slow consumers",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-COMMIT-batch1-3"
     }
   ],
   "findings_log": [
@@ -629,6 +646,60 @@
       "owner": "server-bootstrap-hardening@cua-checkers",
       "resolution": "CLI block: .catch(err => { console.error(err); process.exit(1); }) added; SIGTERM/SIGINT handlers call wss.close() then server.close() with 5s drain timeout (setTimeout unref'd). Test: tests/server.test.js 'graceful shutdown > server.close and wss.close settle after createApp'. server.js 100% coverage.",
       "status": "done"
+    },
+    {
+      "id": "FND-COMMIT-batch1-1",
+      "severity": "major",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "src/lib/wsHandler.js:22",
+      "problem": "query.game / query.as validation gap: array query params silently coerce, unknown 'as' values fall through to auto-assign without explicit error frame.",
+      "fix": "Reject array query params (or coerce to first value); restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate query.as against {red, black, observer, ''}.",
+      "resolution": "addressed-by-Phase-18-(in-flight)"
+    },
+    {
+      "id": "FND-COMMIT-batch1-2",
+      "severity": "major",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "server.js:59",
+      "problem": "SIGINT/SIGTERM shutdown path calls process.exit(0) from server.close callback without awaiting wss.close() or draining connected WS clients. Upgraded sockets get cut before close handshake and queued frames are lost.",
+      "fix": "Make shutdown async: close every live ws client, await both wss.close() and server.close(), keep 5s timeout as a safety fallback before calling process.exit.",
+      "resolution": "new-spec F-RVW-batch1-2 + Phase 28"
+    },
+    {
+      "id": "FND-COMMIT-batch1-3",
+      "severity": "major",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "src/lib/wsHandler.js:15",
+      "problem": "safeSend/broadcast send to every peer without bufferedAmount gate or ping/pong heartbeat. A slow or half-open client causes unbounded outbound buffer growth. Integration tests only exercise responsive sockets.",
+      "fix": "Cap buffered output by terminating/dropping slow peers when ws.bufferedAmount exceeds a threshold; add ping/pong heartbeat cleanup; add a live test that pauses one socket while another triggers broadcasts.",
+      "resolution": "new-spec F-RVW-batch1-3 + Phase 29"
+    },
+    {
+      "id": "FND-COMMIT-batch1-4",
+      "severity": "note",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "package.json / package-lock.json",
+      "problem": "No findings.",
+      "fix": "n/a — informational",
+      "resolution": "clean: package.json/lockfile clean post-bump; no findings"
+    },
+    {
+      "id": "FND-COMMIT-batch1-5",
+      "severity": "note",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "src/lib/store.js",
+      "problem": "No findings.",
+      "fix": "n/a — informational",
+      "resolution": "clean: joinSocket idempotency clean"
+    },
+    {
+      "id": "FND-COMMIT-batch1-6",
+      "severity": "note",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing) of 6e9e2d2/5e174b0/92dcb9e/36cdbd1",
+      "file": "tests/globalSetup.js + tests/server.test.js + tests/ws.test.js",
+      "problem": "No findings.",
+      "fix": "n/a — informational",
+      "resolution": "clean: globalSetup.js / server.test.js / ws.test.js clean"
     }
   ]
 }

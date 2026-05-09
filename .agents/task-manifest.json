@@ -407,6 +407,27 @@
         22
       ],
       "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 28,
+      "title": "Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-batch1-2"
+      ],
+      "blocked_by": []
+    },
+    {
+      "id": 29,
+      "title": "WS backpressure + heartbeat (F-RVW-batch1-3)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-batch1-3"
+      ],
+      "blocked_by": [
+        15,
+        17
+      ]
     }
   ],
   "current_state": {
@@ -536,6 +557,13 @@
       "event": "WS integration tests landed; F-013 done; Q-205 done; 17 integration tests against live server; 100% coverage on server.js including HTTP handler and non-/ws upgrade branches; all 134 tests passing",
       "owner": "ws-tdd@cua-checkers",
       "commit": "92dcb9e"
+    },
+    {
+      "phase_id": 8,
+      "event": "Per-commit batch review of 6e9e2d2/5e174b0/92dcb9e/36cdbd1: 3 majors + 3 clean notes. Major 1 already in flight (Phase 18). New phases 28 (async shutdown) + 29 (WS backpressure + heartbeat).",
+      "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing — Agent spawned without team_name)",
+      "commits_reviewed": ["6e9e2d2", "5e174b0", "92dcb9e", "36cdbd1"],
+      "new_phases": [28, 29]
     }
   ]
 }
