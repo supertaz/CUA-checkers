@@ -32,11 +32,11 @@
 - [x] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — commit `5e174b0` (`joinsocket-fix@cua-checkers`)
 - [x] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
 - [x] Phase 14: server.listen error wiring (F-RVW-c98f5ca-1) — `server-bootstrap-hardening@cua-checkers` (tests/server.test.js, 100% coverage)
-- [⏸] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
+- [x] Phase 15: Origin allowlist on /ws upgrade — CSWSH (F-RVW-c98f5ca-2) — `ws-protocol-hardening@cua-checkers` commit `a3bffc6`
 - [x] Phase 16: Graceful shutdown + .catch on createApp (F-RVW-c98f5ca-3) — `server-bootstrap-hardening@cua-checkers` (tests/server.test.js, 100% coverage)
-- [⏸] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
-- [⏸] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
-- [⏸] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — awaiting Phase 6 landing, will be tackled by `ws-protocol-hardening` teammate post-Phase-6
+- [x] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — `ws-protocol-hardening@cua-checkers` commit `a3bffc6`
+- [x] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — `ws-protocol-hardening@cua-checkers` commit `a3bffc6`
+- [x] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — `ws-protocol-hardening@cua-checkers` commit `a3bffc6`
 - [⏸] Phase 20: Status codes for /moves (F-RVW-3eae194-1) — blocked_by Phase 5 lifecycle
 - [⏸] Phase 21: REST gameId validation (F-RVW-3eae194-2) — blocked_by Phase 18
 - [⏸] Phase 22: Spec entries for POST /games + DELETE /games/:id (F-RVW-3eae194-3) — doc-only follow-up
@@ -56,4 +56,4 @@
 
 ## Last landed commit
 
-`92dcb9e` — Phase 6 WS integration tests: 17 live-server tests (ws.test.js), 100% server.js coverage, F-013 done, Q-205 done. Also includes tests/server.test.js (Phase 14/16 server bootstrap tests).
+`a3bffc6` — Phases 15+17+18+19 (ws-protocol-hardening): Origin allowlist (ALLOWED_ORIGINS env), payload cap (WS_MAX_PAYLOAD=8KiB), rate limit (WS_RATE_LIMIT_OPS/WS_RATE_LIMIT_WINDOW_MS), query validation (validateGameId exported from store.js), seq+requestId on all broadcasts. 237 tests, 100% coverage on wsHandler.js + server.js + store.js.

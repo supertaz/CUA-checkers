@@ -248,7 +248,7 @@
     {
       "id": 15,
       "title": "server.js: enforce Origin allowlist on /ws upgrade to mitigate CSWSH (F-RVW-c98f5ca-2)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
@@ -256,7 +256,9 @@
         "F-RVW-c98f5ca-2"
       ],
       "details": "Validate req.headers.origin against ALLOWED_ORIGINS env (defaulting to localhost in dev). Reject disallowed upgrades with 403 + socket.destroy. Combined with Phase 16 input validation.",
-      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6",
+      "evidence": "commit a3bffc6 — ALLOWED_ORIGINS env; 403+destroy on missing/disallowed; wildcard '*' bypasses check; tests: 4 origin tests in tests/ws.test.js; server.js 100% coverage",
+      "owner": "ws-protocol-hardening@cua-checkers"
     },
     {
       "id": 16,
@@ -274,7 +276,7 @@
     {
       "id": 17,
       "title": "wsHandler/server: cap WebSocket payload size and rate-limit control messages (F-RVW-c98f5ca-4)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
@@ -282,12 +284,14 @@
         "F-RVW-c98f5ca-4"
       ],
       "details": "Construct WebSocketServer with maxPayload (e.g. 8 KiB). Add per-socket token bucket on reset/undo to prevent broadcast flooding.",
-      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6",
+      "evidence": "commit a3bffc6 — maxPayload:8*1024 (WS_MAX_PAYLOAD env); token bucket 10ops/5s (WS_RATE_LIMIT_OPS/WS_RATE_LIMIT_WINDOW_MS); ws.on('error') suppresses WS_ERR_UNSUPPORTED_MESSAGE_LENGTH; rate-limit tests in wsHandler.test.js + ws.test.js; payload cap test in ws.test.js; wsHandler.js + server.js 100% coverage",
+      "owner": "ws-protocol-hardening@cua-checkers"
     },
     {
       "id": 18,
       "title": "wsHandler/server: validate query.game and query.as (reject arrays, allowlist roles, bound id length) (F-RVW-c98f5ca-5)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
@@ -295,12 +299,14 @@
         "F-RVW-c98f5ca-5"
       ],
       "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as ∈ {red, black, observer} or treat as auto-assign.",
-      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6",
+      "evidence": "commit a3bffc6 — validateGameId() exported from store.js; array coercion; E_INVALID_GAMEID + ws.close(1008); E_INVALID_ROLE + ws.close(1008); 11 query-validation tests in wsHandler.test.js; wsHandler.js + store.js 100% coverage",
+      "owner": "ws-protocol-hardening@cua-checkers"
     },
     {
       "id": 19,
       "title": "wsHandler: add per-game seq + requestId echo for move/state correlation (F-RVW-c98f5ca-6)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
@@ -308,7 +314,9 @@
         "F-RVW-c98f5ca-6"
       ],
       "details": "Maintain monotonic seq on each game; include seq on every state/presence broadcast. Echo client-supplied requestId on success/error reply so clients can correlate inflight moves.",
-      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6",
+      "evidence": "commit a3bffc6 — freshGame() adds seq:0; broadcastAll() stamps g.seq++ on every message; requestId echoed in ack/error; seq+requestId tests in wsHandler.test.js + ws.test.js; wsHandler.js + store.js 100% coverage",
+      "owner": "ws-protocol-hardening@cua-checkers"
     },
     {
       "id": 20,
@@ -457,7 +465,7 @@
         "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "92dcb9e"
+    "last_landed_commit": "a3bffc6"
   },
   "history": [
     {
@@ -564,6 +572,25 @@
       "source": "codex-reviewer-batch1 (codex plugin, gpt-5.4-mini xhigh, real codex routing — Agent spawned without team_name)",
       "commits_reviewed": ["6e9e2d2", "5e174b0", "92dcb9e", "36cdbd1"],
       "new_phases": [28, 29]
+    },
+    {
+      "phase_id": 15,
+      "event": "WS protocol hardening Phases 15+17+18+19 landed in single commit: Origin allowlist (F-RVW-c98f5ca-2), payload cap + rate limit (F-RVW-c98f5ca-4), query validation (F-RVW-c98f5ca-5), seq+requestId (F-RVW-c98f5ca-6). validateGameId exported from store.js for Phase 21 reuse. 237 tests, 100% coverage on wsHandler.js + server.js + store.js.",
+      "phase_ids": [15, 17, 18, 19],
+      "commit": "a3bffc6",
+      "owner": "ws-protocol-hardening@cua-checkers",
+      "test_counts": {
+        "total": 237,
+        "wsHandler": "100% coverage",
+        "server": "100% coverage",
+        "store": "100% coverage"
+      },
+      "env_vars_introduced": [
+        "ALLOWED_ORIGINS",
+        "WS_MAX_PAYLOAD",
+        "WS_RATE_LIMIT_OPS",
+        "WS_RATE_LIMIT_WINDOW_MS"
+      ]
     }
   ]
 }

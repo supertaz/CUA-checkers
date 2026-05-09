@@ -240,10 +240,11 @@
     {
       "id": "F-RVW-c98f5ca-6",
       "title": "No per-game seq or requestId echo on move broadcasts; clients cannot correlate their move attempt with the resulting state frame",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
       "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
-      "evidence_required": "Each broadcast includes a monotonic seq; success/error replies echo a client-supplied requestId; tests assert ordering."
+      "evidence_required": "Each broadcast includes a monotonic seq; success/error replies echo a client-supplied requestId; tests assert ordering.",
+      "evidence": "store.js freshGame: seq:0 added. wsHandler.js broadcastAll: stamps seq (g.seq++) on every broadcast. requestId echoed via ack message on success and in error responses. Tests: 'state broadcasts include monotonically increasing seq', 'two games have independent seq counters', 'presence broadcasts include seq', 'move with requestId yields ack', 'error response echoes requestId', 'reset/undo with requestId yields ack', integration tests in ws.test.js. wsHandler.js + store.js 100% coverage. Commit: a3bffc6"
     },
     {
       "id": "F-RVW-c98f5ca-7",
@@ -700,6 +701,38 @@
       "problem": "No findings.",
       "fix": "n/a — informational",
       "resolution": "clean: globalSetup.js / server.test.js / ws.test.js clean"
+    },
+    {
+      "id": "FND-CLOSURE-c98f5ca-2",
+      "spec_id": "F-RVW-c98f5ca-2",
+      "phase_id": 15,
+      "owner": "ws-protocol-hardening@cua-checkers",
+      "resolution": "server.js upgrade handler reads ALLOWED_ORIGINS env at connect time; rejects missing/disallowed origin with HTTP/1.1 403 + socket.destroy() before wss.handleUpgrade; wildcard '*' bypasses check. Tests: 4 origin tests in tests/ws.test.js. server.js 100% coverage. Commit: a3bffc6",
+      "status": "done"
+    },
+    {
+      "id": "FND-CLOSURE-c98f5ca-4",
+      "spec_id": "F-RVW-c98f5ca-4",
+      "phase_id": 17,
+      "owner": "ws-protocol-hardening@cua-checkers",
+      "resolution": "WebSocketServer({ maxPayload: 8*1024 }) in server.js; per-socket token bucket (10 ops/5s) in wsHandler.js for move/reset/undo; ws.on('error') suppresses uncaught WS_ERR_UNSUPPORTED_MESSAGE_LENGTH; bucket cleaned on close. Tests: payload cap test + rate limit test in tests/ws.test.js; unit-level tests in tests/wsHandler.test.js. wsHandler.js + server.js 100% coverage. Commit: a3bffc6",
+      "status": "done"
+    },
+    {
+      "id": "FND-CLOSURE-c98f5ca-5",
+      "spec_id": "F-RVW-c98f5ca-5",
+      "phase_id": 18,
+      "owner": "ws-protocol-hardening@cua-checkers",
+      "resolution": "validateGameId() exported from store.js (^[A-Za-z0-9_-]{1,64}$); array query.game coerced to first element then validated (E_INVALID_GAMEID + ws.close(1008)); query.as validated against {''|red|black|observer} (E_INVALID_ROLE + ws.close(1008)). Tests: 11 query-validation tests in tests/wsHandler.test.js. wsHandler.js + store.js 100% coverage. Commit: a3bffc6",
+      "status": "done"
+    },
+    {
+      "id": "FND-CLOSURE-c98f5ca-6",
+      "spec_id": "F-RVW-c98f5ca-6",
+      "phase_id": 19,
+      "owner": "ws-protocol-hardening@cua-checkers",
+      "resolution": "freshGame() now includes seq:0; broadcastAll() stamps seq (g.seq++) on every broadcast message; requestId echoed in ack (success) and error responses per-client. Tests: seq ordering, independent counters, requestId echo tests in tests/wsHandler.test.js + tests/ws.test.js. wsHandler.js + store.js 100% coverage. Commit: a3bffc6",
+      "status": "done"
     }
   ]
 }
