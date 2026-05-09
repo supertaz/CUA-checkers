@@ -78,7 +78,7 @@
     {
       "id": 4,
       "title": "server.js + src/lib/wsHandler.js",
-      "status": "todo",
+      "status": "in_progress",
       "blocked_by": [3],
       "spec_refs": ["F-010", "F-013", "F-015"]
     },

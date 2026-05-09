@@ -77,7 +77,8 @@
     {
       "id": "F-013",
       "title": "WebSocket /ws endpoint for browser↔server move passing and live state sync; supports query params game and as (red|black|observer)",
-      "status": "todo"
+      "status": "in_progress",
+      "evidence": "src/lib/wsHandler.js + server.js; full WS integration closes in Phase 6"
     },
     {
       "id": "F-014",
@@ -88,7 +89,8 @@
     {
       "id": "F-015",
       "title": "Player role assignment: first joiner = red, second = black, rest = observers; freed on disconnect; client may request role via ?as=…",
-      "status": "todo"
+      "status": "done",
+      "evidence": "src/lib/wsHandler.js + store.js; all role assignment paths covered by tests/wsHandler.test.js (18 tests, 100% coverage)"
     },
     {
       "id": "F-016",

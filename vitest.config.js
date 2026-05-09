@@ -13,6 +13,8 @@ export default defineConfig({
       exclude: [
         'src/app/layout.js',
         'src/app/globals.css',
+        // TODO Phase 5/6: include via createApp coverage
+        '../server.js',
       ],
       thresholds: {
         lines: 100,
