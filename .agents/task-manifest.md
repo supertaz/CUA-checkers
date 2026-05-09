@@ -30,7 +30,7 @@
 - [⏸] Phase 10: push to origin when all gates green — blocked by Phase 9
 - [♻] Phase 11: iterate on findings — perpetual until specs.json fully green
 - [⏸] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — blocked by Phase 4
-- [>] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
+- [x] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
 
 ## Active workers
 

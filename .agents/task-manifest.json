@@ -143,9 +143,58 @@
     {
       "id": 13,
       "title": "Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4)",
-      "status": "todo",
+      "status": "done",
       "spec_refs": ["F-RVW-9d6491e-4"],
-      "details": "Verify npm advisory for next@15.1.6; bump to patched release if available; regenerate package-lock.json."
+      "details": "Verify npm advisory for next@15.1.6; bump to patched release if available; regenerate package-lock.json.",
+      "evidence": "next bumped 15.1.6 → 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated; 108 tests 100% coverage; advisory counts: before critical:1/high:0/moderate:1/low:2, after critical:0/high:0/moderate:2/low:2 (remaining moderate = postcss XSS via Next bundled dep, fix requires Next 9.x downgrade — not applicable)"
+    },
+    {
+      "id": 14,
+      "title": "server.js: wire server.listen error handler so createApp rejects on EADDRINUSE/etc (F-RVW-c98f5ca-1)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-1"],
+      "details": "Replace single-listener listen Promise with server.once('error', reject) + server.once('listening', resolve) so port-in-use surfaces as a rejection instead of a hang."
+    },
+    {
+      "id": 15,
+      "title": "server.js: enforce Origin allowlist on /ws upgrade to mitigate CSWSH (F-RVW-c98f5ca-2)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-2"],
+      "details": "Validate req.headers.origin against ALLOWED_ORIGINS env (defaulting to localhost in dev). Reject disallowed upgrades with 403 + socket.destroy. Combined with Phase 16 input validation."
+    },
+    {
+      "id": 16,
+      "title": "server.js: graceful shutdown + unhandled rejection handling on CLI bootstrap (F-RVW-c98f5ca-3)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-3"],
+      "details": "Add .catch on createApp, install SIGTERM/SIGINT handlers that wss.close() then server.close() with a drain timeout."
+    },
+    {
+      "id": 17,
+      "title": "wsHandler/server: cap WebSocket payload size and rate-limit control messages (F-RVW-c98f5ca-4)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-4"],
+      "details": "Construct WebSocketServer with maxPayload (e.g. 8 KiB). Add per-socket token bucket on reset/undo to prevent broadcast flooding."
+    },
+    {
+      "id": 18,
+      "title": "wsHandler/server: validate query.game and query.as (reject arrays, allowlist roles, bound id length) (F-RVW-c98f5ca-5)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-5"],
+      "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as ∈ {red, black, observer} or treat as auto-assign."
+    },
+    {
+      "id": 19,
+      "title": "wsHandler: add per-game seq + requestId echo for move/state correlation (F-RVW-c98f5ca-6)",
+      "status": "todo",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-c98f5ca-6"],
+      "details": "Maintain monotonic seq on each game; include seq on every state/presence broadcast. Echo client-supplied requestId on success/error reply so clients can correlate inflight moves."
     }
   ],
   "current_state": {
@@ -208,6 +257,18 @@
       "event": "REST API TDD landed; F-012 done; Q-204 done; 13 tests, 100% coverage on all 3 route files (games/route.js, games/[id]/route.js, games/[id]/moves/route.js)",
       "commit": "3eae194",
       "owner": "api-tdd@cua-checkers"
+    },
+    {
+      "phase_id": 8,
+      "event": "Per-commit adversarial review of c98f5ca: 6 major + 4 minor + 3 note. Major findings (server.listen error wiring, CSWSH origin check, graceful shutdown, payload cap + rate limit, query.game/as validation, move/state seq+requestId) → new specs F-RVW-c98f5ca-1..6 + new manifest phases 14-19 (all blocked_by Phase 4). No block findings. F-RVW-9d6491e-2 (joinSocket idempotency) confirmed not affected by c98f5ca. Verdict: findings:6.",
+      "source": "codex-reviewer-phase4 (gpt-5.4-mini xhigh per Phase 8 contract; performed inline because team Agent spawn was unavailable in the teammate context)",
+      "commits_reviewed": ["c98f5ca"],
+      "new_phases": [14, 15, 16, 17, 18, 19]
+    },
+    {
+      "phase_id": 13,
+      "event": "Next.js advisory audit complete: bumped next 15.1.6 → 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1→0, high 0→0. 108 tests, 100% coverage. F-RVW-9d6491e-4 → done.",
+      "owner": "security-audit@cua-checkers"
     }
   ]
 }
