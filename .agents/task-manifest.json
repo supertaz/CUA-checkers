@@ -13,17 +13,50 @@
       "done": "Phase fully closed; corresponding specs.json items flipped to `done`; landing commit recorded in `evidence`."
     },
     "transitions_allowed": [
-      ["todo", "in_progress"],
-      ["todo", "delegated"],
-      ["todo", "deferred"],
-      ["deferred", "todo"],
-      ["deferred", "delegated"],
-      ["in_progress", "delegated"],
-      ["in_progress", "done"],
-      ["delegated", "in_progress"],
-      ["delegated", "done"],
-      ["recurring", "recurring"],
-      ["done", "in_progress"]
+      [
+        "todo",
+        "in_progress"
+      ],
+      [
+        "todo",
+        "delegated"
+      ],
+      [
+        "todo",
+        "deferred"
+      ],
+      [
+        "deferred",
+        "todo"
+      ],
+      [
+        "deferred",
+        "delegated"
+      ],
+      [
+        "in_progress",
+        "delegated"
+      ],
+      [
+        "in_progress",
+        "done"
+      ],
+      [
+        "delegated",
+        "in_progress"
+      ],
+      [
+        "delegated",
+        "done"
+      ],
+      [
+        "recurring",
+        "recurring"
+      ],
+      [
+        "done",
+        "in_progress"
+      ]
     ],
     "transition_done_to_in_progress_note": "Permitted only when a downstream review surfaces a regression on a previously-closed phase; record the reason on the item's `notes` field."
   },
@@ -63,68 +96,109 @@
       "status": "done",
       "owner": "rules-tdd@cua-checkers",
       "task_id": 2,
-      "spec_refs": ["Q-201", "Q-202", "F-004"],
+      "spec_refs": [
+        "Q-201",
+        "Q-202",
+        "F-004"
+      ],
       "evidence": "tests/rules.test.js (43 tests, 100% coverage on src/lib/checkers.js); finding F-019 logged."
     },
     {
       "id": 3,
       "title": "TDD store (Q-203)",
       "status": "done",
-      "blocked_by": [2],
-      "spec_refs": ["Q-203", "F-011", "F-015"],
+      "blocked_by": [
+        2
+      ],
+      "spec_refs": [
+        "Q-203",
+        "F-011",
+        "F-015"
+      ],
       "task_id": 3,
-      "evidence": "commit 22654af — tests/store.test.js (33 tests, 100% coverage on src/lib/store.js)"
+      "evidence": "commit 22654af \u2014 tests/store.test.js (33 tests, 100% coverage on src/lib/store.js)"
     },
     {
       "id": 4,
       "title": "server.js + src/lib/wsHandler.js",
       "status": "done",
-      "blocked_by": [3],
-      "spec_refs": ["F-010", "F-013", "F-015"],
-      "evidence": "commit c98f5ca — server.js + src/lib/wsHandler.js; 18 tests, 100% coverage on wsHandler.js; F-015 done, F-013 in_progress"
+      "blocked_by": [
+        3
+      ],
+      "spec_refs": [
+        "F-010",
+        "F-013",
+        "F-015"
+      ],
+      "evidence": "commit c98f5ca \u2014 server.js + src/lib/wsHandler.js; 18 tests, 100% coverage on wsHandler.js; F-015 done, F-013 in_progress"
     },
     {
       "id": 5,
       "title": "TDD REST API routes",
       "status": "done",
-      "blocked_by": [4],
-      "spec_refs": ["F-012", "Q-204"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-012",
+        "Q-204"
+      ],
       "owner": "api-tdd@cua-checkers",
-      "evidence": "commit 3eae194 — tests/api.test.js (13 tests, 100% coverage on all 3 route files); F-012 and Q-204 done"
+      "evidence": "commit 3eae194 \u2014 tests/api.test.js (13 tests, 100% coverage on all 3 route files); F-012 and Q-204 done"
     },
     {
       "id": 6,
       "title": "TDD WebSocket protocol",
       "status": "deferred",
-      "blocked_by": [4],
-      "spec_refs": ["F-013", "F-015", "Q-205"]
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-013",
+        "F-015",
+        "Q-205"
+      ]
     },
     {
       "id": 7,
       "title": "Next.js client + role-color theming",
       "status": "deferred",
-      "blocked_by": [6],
-      "spec_refs": ["F-014", "F-016", "F-017", "F-018", "Q-206"]
+      "blocked_by": [
+        6
+      ],
+      "spec_refs": [
+        "F-014",
+        "F-016",
+        "F-017",
+        "F-018",
+        "Q-206"
+      ]
     },
     {
       "id": 8,
       "title": "Per-commit codex adversarial review",
       "status": "recurring",
-      "spec_refs": ["R-300"],
+      "spec_refs": [
+        "R-300"
+      ],
       "details": "gpt-5.4-mini xhigh via codex:codex-rescue subagent. Fires after each implementation commit. Findings are appended as new spec entries with status=todo and as new manifest phases."
     },
     {
       "id": 9,
       "title": "Pre-push codex adversarial review",
       "status": "recurring",
-      "spec_refs": ["R-301"],
+      "spec_refs": [
+        "R-301"
+      ],
       "details": "gpt-5.5 high via codex:codex-rescue subagent. Gates every push to origin."
     },
     {
       "id": 10,
       "title": "Push to origin when all gates green",
       "status": "deferred",
-      "blocked_by": [9]
+      "blocked_by": [
+        9
+      ]
     },
     {
       "id": 11,
@@ -136,84 +210,222 @@
       "id": 12,
       "title": "Fix store.joinSocket idempotency (F-RVW-9d6491e-2)",
       "status": "done",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-9d6491e-2"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-9d6491e-2"
+      ],
       "details": "Clear previous role membership for a socket before reassigning, or return the current role when the socket is already registered. Phase 4 should land first since server-impl touches adjacent code.",
-      "evidence": "commit 5e174b0 — store.js early-return on rolesByWs.has(ws); 5 new idempotency tests added to tests/store.test.js (38 total); store.js 100% coverage",
+      "evidence": "commit 5e174b0 \u2014 store.js early-return on rolesByWs.has(ws); 5 new idempotency tests added to tests/store.test.js (38 total); store.js 100% coverage",
       "owner": "joinsocket-fix@cua-checkers"
     },
     {
       "id": 13,
       "title": "Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4)",
       "status": "done",
-      "spec_refs": ["F-RVW-9d6491e-4"],
+      "spec_refs": [
+        "F-RVW-9d6491e-4"
+      ],
       "details": "Verify npm advisory for next@15.1.6; bump to patched release if available; regenerate package-lock.json.",
-      "evidence": "next bumped 15.1.6 → 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated; 108 tests 100% coverage; advisory counts: before critical:1/high:0/moderate:1/low:2, after critical:0/high:0/moderate:2/low:2 (remaining moderate = postcss XSS via Next bundled dep, fix requires Next 9.x downgrade — not applicable)"
+      "evidence": "next bumped 15.1.6 \u2192 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated; 108 tests 100% coverage; advisory counts: before critical:1/high:0/moderate:1/low:2, after critical:0/high:0/moderate:2/low:2 (remaining moderate = postcss XSS via Next bundled dep, fix requires Next 9.x downgrade \u2014 not applicable)"
     },
     {
       "id": 14,
       "title": "server.js: wire server.listen error handler so createApp rejects on EADDRINUSE/etc (F-RVW-c98f5ca-1)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-1"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-1"
+      ],
       "details": "Replace single-listener listen Promise with server.once('error', reject) + server.once('listening', resolve) so port-in-use surfaces as a rejection instead of a hang."
     },
     {
       "id": 15,
       "title": "server.js: enforce Origin allowlist on /ws upgrade to mitigate CSWSH (F-RVW-c98f5ca-2)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-2"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-2"
+      ],
       "details": "Validate req.headers.origin against ALLOWED_ORIGINS env (defaulting to localhost in dev). Reject disallowed upgrades with 403 + socket.destroy. Combined with Phase 16 input validation."
     },
     {
       "id": 16,
       "title": "server.js: graceful shutdown + unhandled rejection handling on CLI bootstrap (F-RVW-c98f5ca-3)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-3"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-3"
+      ],
       "details": "Add .catch on createApp, install SIGTERM/SIGINT handlers that wss.close() then server.close() with a drain timeout."
     },
     {
       "id": 17,
       "title": "wsHandler/server: cap WebSocket payload size and rate-limit control messages (F-RVW-c98f5ca-4)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-4"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-4"
+      ],
       "details": "Construct WebSocketServer with maxPayload (e.g. 8 KiB). Add per-socket token bucket on reset/undo to prevent broadcast flooding."
     },
     {
       "id": 18,
       "title": "wsHandler/server: validate query.game and query.as (reject arrays, allowlist roles, bound id length) (F-RVW-c98f5ca-5)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-5"],
-      "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as ∈ {red, black, observer} or treat as auto-assign."
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-5"
+      ],
+      "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as \u2208 {red, black, observer} or treat as auto-assign."
     },
     {
       "id": 19,
       "title": "wsHandler: add per-game seq + requestId echo for move/state correlation (F-RVW-c98f5ca-6)",
       "status": "todo",
-      "blocked_by": [4],
-      "spec_refs": ["F-RVW-c98f5ca-6"],
+      "blocked_by": [
+        4
+      ],
+      "spec_refs": [
+        "F-RVW-c98f5ca-6"
+      ],
       "details": "Maintain monotonic seq on each game; include seq on every state/presence broadcast. Echo client-supplied requestId on success/error reply so clients can correlate inflight moves."
+    },
+    {
+      "id": 20,
+      "title": "Differentiated HTTP status codes for /moves error flavors (F-RVW-3eae194-1)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-1"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 21,
+      "title": "REST gameId allowlist + length cap via shared validateGameId helper (F-RVW-3eae194-2)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-2"
+      ],
+      "blocked_by": [
+        5,
+        18
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 22,
+      "title": "Add spec entries for POST /api/games + DELETE /api/games/:id (F-RVW-3eae194-3)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-3"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 23,
+      "title": "REST DELETE /api/games/:id must broadcast state after resetGame (F-RVW-3eae194-4)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-4"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 24,
+      "title": "Add broadcast spy assertion to POST /moves tests (F-RVW-3eae194-5)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-5"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 25,
+      "title": "Add missing behavior assertions to api.test.js (F-RVW-3eae194-6)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-6"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 26,
+      "title": "DELETE non-existent id must return 404 + E_NOT_FOUND instead of creating game (F-RVW-3eae194-7)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-7"
+      ],
+      "blocked_by": [
+        5
+      ],
+      "notes": "Review-driven follow-up"
+    },
+    {
+      "id": 27,
+      "title": "Normalize response envelopes across all REST route files (F-RVW-3eae194-8)",
+      "status": "todo",
+      "spec_refs": [
+        "F-RVW-3eae194-8"
+      ],
+      "blocked_by": [
+        5,
+        22
+      ],
+      "notes": "Review-driven follow-up"
     }
   ],
   "current_state": {
     "active_teammates": [
-      { "name": "rules-tdd-or-claimant@cua-checkers", "phase_id": 3, "task_id": 3 }
+      {
+        "name": "rules-tdd-or-claimant@cua-checkers",
+        "phase_id": 3,
+        "task_id": 3
+      }
     ],
     "idle_teammates": [
-      { "name": "infra@cua-checkers", "last_phase": 1 }
+      {
+        "name": "infra@cua-checkers",
+        "last_phase": 1
+      }
     ],
     "in_flight_reviews": [
       {
         "subagent": "codex:codex-rescue",
         "model": "gpt-5.4-mini",
         "reasoning": "xhigh",
-        "commits_under_review": ["f1e1aae", "9d6491e"],
+        "commits_under_review": [
+          "f1e1aae",
+          "9d6491e"
+        ],
         "kind": "per-commit",
-        "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
+        "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
     "last_landed_commit": "5e174b0"
@@ -249,10 +461,16 @@
     },
     {
       "phase_id": 8,
-      "event": "Per-commit codex review on f1e1aae+9d6491e returned 1 block + 1 major + 1 minor + 1 note. Resolutions: block (FND-1) addressed by F-010/Phase 4; major (FND-2) → new spec F-RVW-9d6491e-2 + Phase 12 deferred behind Phase 4; minor (FND-3) already closed by Phases 2+3; note (FND-4) → new spec F-RVW-9d6491e-4 + Phase 13 ready.",
+      "event": "Per-commit codex review on f1e1aae+9d6491e returned 1 block + 1 major + 1 minor + 1 note. Resolutions: block (FND-1) addressed by F-010/Phase 4; major (FND-2) \u2192 new spec F-RVW-9d6491e-2 + Phase 12 deferred behind Phase 4; minor (FND-3) already closed by Phases 2+3; note (FND-4) \u2192 new spec F-RVW-9d6491e-4 + Phase 13 ready.",
       "source": "codex review (gpt-5.4-mini xhigh)",
-      "commits_reviewed": ["f1e1aae", "9d6491e"],
-      "new_phases": [12, 13]
+      "commits_reviewed": [
+        "f1e1aae",
+        "9d6491e"
+      ],
+      "new_phases": [
+        12,
+        13
+      ]
     },
     {
       "phase_id": 5,
@@ -262,14 +480,23 @@
     },
     {
       "phase_id": 8,
-      "event": "Per-commit adversarial review of c98f5ca: 6 major + 4 minor + 3 note. Major findings (server.listen error wiring, CSWSH origin check, graceful shutdown, payload cap + rate limit, query.game/as validation, move/state seq+requestId) → new specs F-RVW-c98f5ca-1..6 + new manifest phases 14-19 (all blocked_by Phase 4). No block findings. F-RVW-9d6491e-2 (joinSocket idempotency) confirmed not affected by c98f5ca. Verdict: findings:6.",
+      "event": "Per-commit adversarial review of c98f5ca: 6 major + 4 minor + 3 note. Major findings (server.listen error wiring, CSWSH origin check, graceful shutdown, payload cap + rate limit, query.game/as validation, move/state seq+requestId) \u2192 new specs F-RVW-c98f5ca-1..6 + new manifest phases 14-19 (all blocked_by Phase 4). No block findings. F-RVW-9d6491e-2 (joinSocket idempotency) confirmed not affected by c98f5ca. Verdict: findings:6.",
       "source": "codex-reviewer-phase4 (gpt-5.4-mini xhigh per Phase 8 contract; performed inline because team Agent spawn was unavailable in the teammate context)",
-      "commits_reviewed": ["c98f5ca"],
-      "new_phases": [14, 15, 16, 17, 18, 19]
+      "commits_reviewed": [
+        "c98f5ca"
+      ],
+      "new_phases": [
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
     },
     {
       "phase_id": 13,
-      "event": "Next.js advisory audit complete: bumped next 15.1.6 → 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1→0, high 0→0. 108 tests, 100% coverage. F-RVW-9d6491e-4 → done.",
+      "event": "Next.js advisory audit complete: bumped next 15.1.6 \u2192 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1\u21920, high 0\u21920. 108 tests, 100% coverage. F-RVW-9d6491e-4 \u2192 done.",
       "owner": "security-audit@cua-checkers"
     },
     {
@@ -277,6 +504,24 @@
       "event": "joinSocket idempotency fix landed; F-RVW-9d6491e-2 done; 5 new tests added (38 total in store.test.js); store.js 100% coverage; semantic chosen: return-existing-role on same-ws re-join",
       "commit": "5e174b0",
       "owner": "joinsocket-fix@cua-checkers"
+    },
+    {
+      "phase_id": 8,
+      "event": "Per-commit adversarial review of 3eae194: 5 major + 3 minor. New specs F-RVW-3eae194-1..8 + manifest phases 20-27. Codex-rescue nested codex invocation was unavailable from team-teammate context; review ran inline at sonnet-grade rigor.",
+      "source": "codex-reviewer-phase5",
+      "commits_reviewed": [
+        "3eae194"
+      ],
+      "new_phases": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ]
     }
   ]
 }

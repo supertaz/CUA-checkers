@@ -37,6 +37,14 @@
 - [⏸] Phase 17: WS payload cap + control-message rate limit (F-RVW-c98f5ca-4) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
 - [⏸] Phase 18: Validate query.game / query.as (F-RVW-c98f5ca-5) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
 - [⏸] Phase 19: Per-game seq + requestId echo on broadcasts (F-RVW-c98f5ca-6) — awaiting Phase 6 landing then `ws-protocol-hardening` teammate
+- [⏸] Phase 20: Status codes for /moves (F-RVW-3eae194-1) — blocked_by Phase 5 lifecycle
+- [⏸] Phase 21: REST gameId validation (F-RVW-3eae194-2) — blocked_by Phase 18
+- [⏸] Phase 22: Spec entries for POST /games + DELETE /games/:id (F-RVW-3eae194-3) — doc-only follow-up
+- [⏸] Phase 23: REST DELETE broadcast on reset (F-RVW-3eae194-4)
+- [⏸] Phase 24: broadcast spy assertion in api.test.js (F-RVW-3eae194-5)
+- [⏸] Phase 25: behavior assertions in api.test.js (F-RVW-3eae194-6)
+- [⏸] Phase 26: DELETE non-existent id → 404 (F-RVW-3eae194-7)
+- [⏸] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — blocked_by Phase 22
 
 ## Active workers
 
