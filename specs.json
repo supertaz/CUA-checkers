@@ -118,7 +118,8 @@
     {
       "id": "Q-200",
       "title": "Vitest test runner with @vitest/coverage-v8; npm test produces coverage report",
-      "status": "todo"
+      "status": "done",
+      "evidence": "vitest.config.js"
     },
     {
       "id": "Q-201",

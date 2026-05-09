@@ -7,7 +7,9 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "next": "15.1.6",
@@ -17,6 +19,13 @@
   },
   "devDependencies": {
     "eslint": "9.17.0",
-    "eslint-config-next": "15.1.6"
+    "eslint-config-next": "15.1.6",
+    "vitest": "^3.2.2",
+    "@vitest/coverage-v8": "^3.2.2",
+    "jsdom": "^26.1.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/user-event": "^14.5.2",
+    "supertest": "^7.1.0"
   }
 }
