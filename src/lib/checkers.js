@@ -61,6 +61,7 @@ function findCaptureSequences(board, r, c, piece) {
       if (!mid || mid.color === curPiece.color) continue;
       if (workBoard[lr][lc]) continue;
       const capCoord = rcToCoord(mr, mc);
+      /* v8 ignore next -- pieces are nulled on nextBoard before recursing, so mid===null fires first */
       if (captured.includes(capCoord)) continue;
       const nextBoard = cloneBoard(workBoard);
       nextBoard[mr][mc] = null;

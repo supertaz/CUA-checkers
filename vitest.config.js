@@ -14,7 +14,6 @@ export default defineConfig({
         'src/app/layout.js',
         'src/app/globals.css',
         'src/lib/store.js',
-        'src/lib/checkers.js',
       ],
       thresholds: {
         lines: 100,

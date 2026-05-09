@@ -124,12 +124,14 @@
     {
       "id": "Q-201",
       "title": "100% line and branch coverage of src/ enforced via coverage thresholds",
-      "status": "todo"
+      "status": "done",
+      "evidence": "vitest.config.js thresholds; checkers.js at 100% as of Phase 2"
     },
     {
       "id": "Q-202",
       "title": "Rules engine unit tests: initial board, simple moves, captures, multi-jump prefixes, king promotion, mid-jump promotion stops chain, game over detection",
-      "status": "todo"
+      "status": "done",
+      "evidence": "tests/rules.test.js (43 tests, 100% coverage)"
     },
     {
       "id": "Q-203",
@@ -168,6 +170,13 @@
       "evidence": "TeamCreate cua-checkers; sonnet teammates infra (Phase 1) and rules-tdd (Phase 2 spawned)"
     }
   ],
-  "findings_log": [],
+  "findings_log": [
+    {
+      "id": "F-019",
+      "title": "Dead defensive branch in findCaptureSequences: captured.includes(capCoord) is unreachable",
+      "status": "todo",
+      "notes": "checkers.js line 64: captured pieces are nulled on nextBoard before recursing, so workBoard[mr][mc] === null (line 61 !mid check) fires first. The captured.includes guard is logically correct but structurally unreachable. Suppressed with v8 ignore comment. A future refactor could remove the guard or restructure the board-clone order to make it reachable. No functional impact."
+    }
+  ],
   "iterations": []
 }
