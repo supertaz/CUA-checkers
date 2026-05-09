@@ -86,9 +86,11 @@
     {
       "id": 5,
       "title": "TDD REST API routes",
-      "status": "deferred",
+      "status": "done",
       "blocked_by": [4],
-      "spec_refs": ["F-012", "Q-204"]
+      "spec_refs": ["F-012", "Q-204"],
+      "owner": "api-tdd@cua-checkers",
+      "evidence": "TBD — commit SHA recorded after git commit"
     },
     {
       "id": 6,

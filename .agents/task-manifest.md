@@ -21,8 +21,8 @@
 - [x] Phase 1: dev infra (vitest + 100% coverage thresholds) — commit `9d6491e` (`infra@cua-checkers`)
 - [x] Phase 2: TDD rules engine (Q-201, Q-202) — commit `a351afd` (`rules-tdd@cua-checkers`)
 - [x] Phase 3: TDD store (Q-203) — commit `22654af`
-- [>] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (Task #4)
-- [⏸] Phase 5: TDD REST API routes (F-012, Q-204) — blocked by Phase 4
+- [x] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (commit c98f5ca)
+- [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit TBD)
 - [⏸] Phase 6: TDD WebSocket protocol (F-013, F-015, Q-205) — blocked by Phase 4
 - [⏸] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — blocked by Phase 6
 - [♻] Phase 8: per-commit codex adversarial review (R-300) — gpt-5.4-mini xhigh via `codex:codex-rescue` subagent

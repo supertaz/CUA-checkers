@@ -73,7 +73,8 @@
     {
       "id": "F-012",
       "title": "REST API route for external agent: GET /api/games, GET /api/games/:id, GET /api/games/:id/moves, POST /api/games/:id/moves",
-      "status": "todo"
+      "status": "done",
+      "evidence": "src/app/api/games/route.js, src/app/api/games/[id]/route.js, src/app/api/games/[id]/moves/route.js + tests/api.test.js (13 tests, 100% coverage)"
     },
     {
       "id": "F-013",
@@ -145,7 +146,9 @@
     {
       "id": "Q-204",
       "title": "REST API integration tests with running Next server: GET list, GET state, GET moves, POST moves (success + role mismatch + illegal)",
-      "status": "todo"
+      "status": "done",
+      "evidence": "tests/api.test.js (13 tests, 100% coverage on all 3 route files); route handlers tested directly without spinning up Next server",
+      "notes": "Tests import route handlers directly and invoke with fabricated Request objects per Next 15 App Router conventions. params passed as Promise per Next 15 requirement."
     },
     {
       "id": "Q-205",
