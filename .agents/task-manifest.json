@@ -78,9 +78,10 @@
     {
       "id": 4,
       "title": "server.js + src/lib/wsHandler.js",
-      "status": "in_progress",
+      "status": "done",
       "blocked_by": [3],
-      "spec_refs": ["F-010", "F-013", "F-015"]
+      "spec_refs": ["F-010", "F-013", "F-015"],
+      "evidence": "commit c98f5ca — server.js + src/lib/wsHandler.js; 18 tests, 100% coverage on wsHandler.js; F-015 done, F-013 in_progress"
     },
     {
       "id": 5,
@@ -171,6 +172,12 @@
       "phase_id": 3,
       "event": "store TDD landed; Q-203 done; 33 tests, 100% coverage on src/lib/store.js",
       "commit": "22654af"
+    },
+    {
+      "phase_id": 4,
+      "event": "server.js + wsHandler.js landed; F-015 done; F-013 in_progress; 18 wsHandler tests, 100% coverage on src/lib/wsHandler.js; server.js excluded from coverage pending Phase 5/6 createApp path",
+      "commit": "c98f5ca",
+      "owner": "server-impl"
     }
   ]
 }
