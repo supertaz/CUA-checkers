@@ -387,6 +387,13 @@
       "status": "todo",
       "severity": "major",
       "source": "FND-COMMIT-batch1-3"
+    },
+    {
+      "id": "F-INFRA-1",
+      "title": "Stabilize test suite: bump tests/server.test.js timeout (or split pool) so concurrent ws.test.js Next compile doesn't flake server tests",
+      "status": "todo",
+      "severity": "major",
+      "source": "FND-PHASE7-1"
     }
   ],
   "findings_log": [
@@ -755,6 +762,15 @@
       "owner": "ws-protocol-hardening@cua-checkers",
       "resolution": "freshGame() now includes seq:0; broadcastAll() stamps seq (g.seq++) on every broadcast message; requestId echoed in ack (success) and error responses per-client. Tests: seq ordering, independent counters, requestId echo tests in tests/wsHandler.test.js + tests/ws.test.js. wsHandler.js + store.js 100% coverage. Commit: a3bffc6",
       "status": "done"
+    },
+    {
+      "id": "FND-PHASE7-1",
+      "severity": "major",
+      "source": "client-impl@cua-checkers Phase 7 report on b07f4a8",
+      "file": "tests/server.test.js + vitest.config.js",
+      "problem": "tests/server.test.js has a 5s timeout that becomes flaky when maxForks:1 serializes execution and tests/ws.test.js's Next.js compile takes 15-25s. Test infra issue, not a product bug. Suggest bumping tests/server.test.js timeout or configuring a separate pool for the jsdom environment.",
+      "fix": "Bump per-file timeout to 30s OR split test environments into a separate pool with a jsdom config",
+      "resolution": "new-spec F-INFRA-1 + Phase 30"
     }
   ]
 }
