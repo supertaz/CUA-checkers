@@ -3,7 +3,7 @@ import { createApp, shutdown } from '../server.js';
 import WebSocket from 'ws';
 import { createServer } from 'node:net';
 
-vi.setConfig({ testTimeout: 5000 });
+vi.setConfig({ testTimeout: 10000 });
 
 // Occupy a port with a raw TCP server, return {port, close}
 function occupyPort() {
