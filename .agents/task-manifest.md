@@ -59,4 +59,4 @@
 
 ## Last landed commit
 
-`TBD` — Phase 31 (minor backlog): F-8 fix (joiner no longer receives duplicate presence); F-9/F-7/F-10/F-11/F-13 resolved; stale flags F-010/F-011/P-101 flipped to done; P-100/R-300/R-301 marked kind=recurring. 269 tests, 100% coverage.
+`114fb28` — Phase 31 (minor backlog): F-8 fix (joiner no longer receives duplicate presence); F-9/F-7/F-10/F-11/F-13 resolved; stale flags F-010/F-011/P-101 flipped to done; P-100/R-300/R-301 marked kind=recurring. 269 tests, 100% coverage.

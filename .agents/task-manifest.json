@@ -499,7 +499,7 @@
         "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "1331fbb",
+    "last_landed_commit": "114fb28",
     "last_landed_phase": 30
   },
   "history": [
@@ -708,7 +708,7 @@
         "F-RVW-c98f5ca-11",
         "F-RVW-c98f5ca-13"
       ],
-      "commit": "TBD"
+      "commit": "114fb28"
     }
   ]
 }
