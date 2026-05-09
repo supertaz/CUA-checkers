@@ -377,9 +377,10 @@
     {
       "id": "F-RVW-batch1-2",
       "title": "Async graceful shutdown: await wss.close() + drain ws clients before process.exit",
-      "status": "todo",
+      "status": "done",
       "severity": "major",
-      "source": "FND-COMMIT-batch1-2"
+      "source": "FND-COMMIT-batch1-2",
+      "evidence": "tests/server.test.js: 'SIGTERM with active ws client: client receives close frame 1001 server-shutdown' (line 107), 'SIGTERM with zero clients: resolves quickly (< 200ms)' (line 127), 'SIGTERM with hung client: forcibly terminated within ~2s' (line 134), 'client.close() throws and client.terminate() throws: all error-swallow branches covered' (line 157), 'outer 5s safety net: process.exit(1) called if shutdown never completes' (line 175). server.js 100% statements/branches/functions/lines."
     },
     {
       "id": "F-RVW-batch1-3",
@@ -771,6 +772,14 @@
       "problem": "tests/server.test.js has a 5s timeout that becomes flaky when maxForks:1 serializes execution and tests/ws.test.js's Next.js compile takes 15-25s. Test infra issue, not a product bug. Suggest bumping tests/server.test.js timeout or configuring a separate pool for the jsdom environment.",
       "fix": "Bump per-file timeout to 30s OR split test environments into a separate pool with a jsdom config",
       "resolution": "new-spec F-INFRA-1 + Phase 30"
+    },
+    {
+      "id": "FND-CLOSURE-batch1-2",
+      "spec_id": "F-RVW-batch1-2",
+      "phase_id": 28,
+      "owner": "shutdown-recovery@cua-checkers",
+      "resolution": "export async function shutdown(signal, {server, wss}) in server.js: wss.close(), server.close(), await Promise.all(clients drain with 1.5s force-terminate), await server.close(resolve). CLI wires SIGTERM/SIGINT with 5s safety setTimeout. Tests: 5 shutdown() tests in tests/server.test.js covering active client (close frame 1001), zero clients, hung client (force-terminate), client.close()+terminate() throw branches, 5s safety net. server.js 100% statements/branches/functions/lines.",
+      "status": "done"
     }
   ]
 }

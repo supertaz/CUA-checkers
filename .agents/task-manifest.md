@@ -45,7 +45,7 @@
 - [⏸] Phase 25: behavior assertions in api.test.js (F-RVW-3eae194-6)
 - [⏸] Phase 26: DELETE non-existent id → 404 (F-RVW-3eae194-7)
 - [⏸] Phase 27: Response envelope normalization (F-RVW-3eae194-8) — blocked_by Phase 22
-- [⏸] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
+- [x] Phase 28: Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)
 - [⏸] Phase 29: WS backpressure + heartbeat (F-RVW-batch1-3) — blocked_by Phase 15+17
 - [~] Phase 30: Stabilize test suite — per-file timeout / pool-split for tests/server.test.js (F-INFRA-1) — orchestrator will dispatch fixer
 
@@ -57,4 +57,4 @@
 
 ## Last landed commit
 
-`b07f4a8` — Phase 7 (client-impl): Next.js client with WebSocket state, role-color theming, window.checkers API, CUA DOM parity, move-hint toggle. 241+ tests, 100% coverage on CheckersClient.jsx.
+`TBD` — Phase 28 (shutdown-recovery): async graceful shutdown export in server.js; SIGTERM/SIGINT wiring; 5 shutdown() tests; server.js 100% coverage all metrics. (SHA to be filled after commit)

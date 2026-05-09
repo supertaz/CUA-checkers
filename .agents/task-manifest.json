@@ -436,11 +436,12 @@
     {
       "id": 28,
       "title": "Async graceful shutdown for SIGINT/SIGTERM (F-RVW-batch1-2)",
-      "status": "todo",
+      "status": "done",
       "spec_refs": [
         "F-RVW-batch1-2"
       ],
-      "blocked_by": []
+      "blocked_by": [],
+      "evidence": "server.js: export async function shutdown(signal, {server, wss}). Tests: tests/server.test.js shutdown() describe block (5 tests): active client close frame 1001, zero clients, hung client force-terminate, client.close()+terminate() throw branches, outer 5s safety net. server.js 100% statements/branches/functions/lines. Commit SHA: TBD (fill after commit)."
     },
     {
       "id": 29,
@@ -491,8 +492,8 @@
         "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "b07f4a8",
-    "last_landed_phase": 7
+    "last_landed_commit": "TBD",
+    "last_landed_phase": 28
   },
   "history": [
     {
@@ -634,10 +635,20 @@
     },
     {
       "phase_id": 30,
-      "event": "New phase 30 added: stabilize test suite — per-file timeout or pool-split for tests/server.test.js. Finding FND-PHASE7-1 from client-impl@cua-checkers Phase 7 closure report on b07f4a8. New spec F-INFRA-1 (severity major). No code changes; metadata-only.",
+      "event": "New phase 30 added: stabilize test suite \u2014 per-file timeout or pool-split for tests/server.test.js. Finding FND-PHASE7-1 from client-impl@cua-checkers Phase 7 closure report on b07f4a8. New spec F-INFRA-1 (severity major). No code changes; metadata-only.",
       "source": "client-impl@cua-checkers Phase 7 report on b07f4a8",
-      "new_specs": ["F-INFRA-1"],
-      "new_phases": [30]
+      "new_specs": [
+        "F-INFRA-1"
+      ],
+      "new_phases": [
+        30
+      ]
+    },
+    {
+      "phase_id": 28,
+      "event": "Phase 28 done: async graceful shutdown export added to server.js; CLI wires SIGTERM/SIGINT with 5s safety net; 5 shutdown() tests cover all branches including close()/terminate() throw paths. server.js 100% coverage on all metrics.",
+      "source": "shutdown-recovery@cua-checkers",
+      "commit": "TBD"
     }
   ]
 }

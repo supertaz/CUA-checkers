@@ -65,6 +65,21 @@ export async function createApp({ port: portArg } = {}) {
   return { server, wss, port: server.address().port };
 }
 
+export async function shutdown(signal, { server, wss }) {
+  console.log(`[server] received ${signal}, shutting down`);
+  wss.close();
+  server.close();
+  await Promise.all([...wss.clients].map(client =>
+    new Promise(resolve => {
+      client.once('close', resolve);
+      try { client.close(1001, 'server-shutdown'); } catch { resolve(); }
+      setTimeout(() => { try { client.terminate(); } catch {} resolve(); }, 1500).unref();
+    })
+  ));
+  await new Promise(resolve => server.close(resolve));
+  console.log(`[server] shutdown complete`);
+}
+
 /* v8 ignore start */
 // CLI entry point — only runs when server.js is executed directly (node server.js),
 // not when imported by tests. Subprocess bootstrap is not exercised by the test suite.
@@ -74,14 +89,16 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     .then(({ server, wss }) => {
       console.log(`> ready on http://localhost:${port}`);
 
-      function shutdown() {
-        wss.close();
-        server.close(() => process.exit(0));
-        setTimeout(() => process.exit(0), 5000).unref();
-      }
+      const handleSignal = (signal) => {
+        const timer = setTimeout(() => process.exit(1), 5000).unref();
+        shutdown(signal, { server, wss }).then(() => {
+          clearTimeout(timer);
+          process.exit(0);
+        });
+      };
 
-      process.once('SIGTERM', shutdown);
-      process.once('SIGINT', shutdown);
+      process.once('SIGTERM', handleSignal);
+      process.once('SIGINT', handleSignal);
     })
     .catch((err) => {
       console.error(err);
