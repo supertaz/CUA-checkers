@@ -24,7 +24,7 @@
 - [x] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (commit c98f5ca)
 - [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit 3eae194)
 - [x] Phase 6: TDD WebSocket protocol (F-013, Q-205) — `ws-tdd@cua-checkers` commit `92dcb9e` (17 integration tests, 100% server.js coverage)
-- [⏸] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — blocked by Phase 6
+- [x] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — commit `b07f4a8` (`client-impl@cua-checkers`) 64 tests, 100% coverage on CheckersClient.jsx
 - [♻] Phase 8: per-commit codex adversarial review (R-300) — gpt-5.4-mini xhigh via `codex:codex-rescue` subagent
 - [♻] Phase 9: pre-push codex adversarial review (R-301) — gpt-5.5 high via `codex:codex-rescue` subagent
 - [⏸] Phase 10: push to origin when all gates green — blocked by Phase 9
@@ -56,4 +56,4 @@
 
 ## Last landed commit
 
-`a3bffc6` — Phases 15+17+18+19 (ws-protocol-hardening): Origin allowlist (ALLOWED_ORIGINS env), payload cap (WS_MAX_PAYLOAD=8KiB), rate limit (WS_RATE_LIMIT_OPS/WS_RATE_LIMIT_WINDOW_MS), query validation (validateGameId exported from store.js), seq+requestId on all broadcasts. 237 tests, 100% coverage on wsHandler.js + server.js + store.js.
+`b07f4a8` — Phase 7 (client-impl): Next.js client with WebSocket state, role-color theming, window.checkers API, CUA DOM parity, move-hint toggle. 241+ tests, 100% coverage on CheckersClient.jsx.
