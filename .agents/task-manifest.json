@@ -90,7 +90,7 @@
       "blocked_by": [4],
       "spec_refs": ["F-012", "Q-204"],
       "owner": "api-tdd@cua-checkers",
-      "evidence": "TBD — commit SHA recorded after git commit"
+      "evidence": "commit 3eae194 — tests/api.test.js (13 tests, 100% coverage on all 3 route files); F-012 and Q-204 done"
     },
     {
       "id": 6,
@@ -165,7 +165,7 @@
         "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "f57f726"
+    "last_landed_commit": "3eae194"
   },
   "history": [
     {
@@ -202,6 +202,12 @@
       "source": "codex review (gpt-5.4-mini xhigh)",
       "commits_reviewed": ["f1e1aae", "9d6491e"],
       "new_phases": [12, 13]
+    },
+    {
+      "phase_id": 5,
+      "event": "REST API TDD landed; F-012 done; Q-204 done; 13 tests, 100% coverage on all 3 route files (games/route.js, games/[id]/route.js, games/[id]/moves/route.js)",
+      "commit": "3eae194",
+      "owner": "api-tdd@cua-checkers"
     }
   ]
 }

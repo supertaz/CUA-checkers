@@ -22,7 +22,7 @@
 - [x] Phase 2: TDD rules engine (Q-201, Q-202) — commit `a351afd` (`rules-tdd@cua-checkers`)
 - [x] Phase 3: TDD store (Q-203) — commit `22654af`
 - [x] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (commit c98f5ca)
-- [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit TBD)
+- [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit 3eae194)
 - [⏸] Phase 6: TDD WebSocket protocol (F-013, F-015, Q-205) — blocked by Phase 4
 - [⏸] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — blocked by Phase 6
 - [♻] Phase 8: per-commit codex adversarial review (R-300) — gpt-5.4-mini xhigh via `codex:codex-rescue` subagent
@@ -30,7 +30,7 @@
 - [⏸] Phase 10: push to origin when all gates green — blocked by Phase 9
 - [♻] Phase 11: iterate on findings — perpetual until specs.json fully green
 - [⏸] Phase 12: Fix store.joinSocket idempotency (F-RVW-9d6491e-2) — blocked by Phase 4
-- [ ] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4)
+- [>] Phase 13: Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4) — `security-audit@cua-checkers`
 
 ## Active workers
 
@@ -40,4 +40,4 @@
 
 ## Last landed commit
 
-`8a99abd` — manifest .md → .json conversion + Phase 2/3 closure.
+`3eae194` — REST API TDD routes (Phase 5): 13 tests, 100% coverage, F-012 + Q-204 done.
