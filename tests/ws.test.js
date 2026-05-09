@@ -679,3 +679,106 @@ describe('seq + requestId (Phase 19)', () => {
     await close(wsB);
   });
 });
+
+// -----------------------------------------------------------------------
+// Phase 29: ping/pong heartbeat + backpressure (integration)
+// -----------------------------------------------------------------------
+describe('heartbeat (Phase 29)', () => {
+  let hbServer, hbWss, hbPort;
+
+  beforeAll(async () => {
+    process.env.ALLOWED_ORIGINS = '*';
+    ({ server: hbServer, wss: hbWss, port: hbPort } = await createApp({ port: 0, heartbeatMs: 100 }));
+  }, 60000);
+
+  afterAll(async () => {
+    hbWss.close();
+    await new Promise((resolve) => hbServer.close(resolve));
+  });
+
+  test('server sends ping frames within ~400ms of connection', async () => {
+    const ws = wsConnect(hbPort, { game: 'hb-ping-1' });
+
+    const pingReceived = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('no ping within 400ms')), 400);
+      ws.on('ping', () => { clearTimeout(timer); resolve(true); });
+      ws.on('error', reject);
+    });
+
+    expect(pingReceived).toBe(true);
+    await close(ws);
+  }, 5000);
+
+  test('unresponsive client (raw TCP, no pong) is terminated within 5 heartbeat intervals', async () => {
+    // Use a raw TCP socket to perform the WS handshake but never respond to pings.
+    const net = await import('node:net');
+    const crypto = await import('node:crypto');
+
+    const wsKey = crypto.randomBytes(16).toString('base64');
+    const rawSocket = net.connect(hbPort, 'localhost');
+
+    await new Promise((resolve, reject) => {
+      rawSocket.once('connect', () => {
+        rawSocket.write(
+          `GET /ws?game=hb-dead-raw HTTP/1.1\r\n` +
+          `Host: localhost:${hbPort}\r\n` +
+          `Upgrade: websocket\r\n` +
+          `Connection: Upgrade\r\n` +
+          `Sec-WebSocket-Key: ${wsKey}\r\n` +
+          `Sec-WebSocket-Version: 13\r\n` +
+          `Origin: http://localhost:${hbPort}\r\n` +
+          `\r\n`
+        );
+        resolve();
+      });
+      rawSocket.once('error', reject);
+    });
+
+    // Wait for the 101 Switching Protocols response
+    await new Promise((resolve, reject) => {
+      let buf = '';
+      const onData = (chunk) => {
+        buf += chunk.toString('binary');
+        if (buf.includes('\r\n\r\n')) {
+          rawSocket.removeListener('data', onData);
+          resolve();
+        }
+      };
+      rawSocket.on('data', onData);
+      setTimeout(() => reject(new Error('no upgrade response')), 2000);
+    });
+
+    // Now ignore all incoming data (no pong responses) and wait for server to close the socket
+    rawSocket.removeAllListeners('data');
+    rawSocket.on('data', () => {}); // swallow all frames including pings
+
+    const socketClosed = await new Promise((resolve) => {
+      rawSocket.once('close', () => resolve(true));
+      rawSocket.once('end', () => resolve(true));
+      setTimeout(() => resolve('timeout'), 800);
+    });
+
+    expect(socketClosed).not.toBe('timeout');
+    rawSocket.destroy();
+  }, 5000);
+
+  test('responsive client (pong sent) is kept alive across multiple heartbeat intervals', async () => {
+    const ws = wsConnect(hbPort, { game: 'hb-alive-1' });
+
+    await new Promise((resolve, reject) => {
+      ws.once('open', resolve);
+      ws.once('error', reject);
+    });
+
+    // ws library auto-responds to pings with pongs by default
+    let closed = false;
+    ws.once('close', () => { closed = true; });
+
+    // Wait 350ms (3.5 intervals at 100ms each) — a responsive client should still be alive
+    await new Promise((resolve) => setTimeout(resolve, 350));
+
+    expect(closed).toBe(false);
+    expect(ws.readyState).toBe(WebSocket.OPEN);
+    await close(ws);
+  }, 5000);
+});

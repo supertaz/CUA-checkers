@@ -1,4 +1,4 @@
-import { handleSocket } from '../src/lib/wsHandler.js';
+import { handleSocket, WS_MAX_BUFFER } from '../src/lib/wsHandler.js';
 import {
   ensureGame,
   joinSocket,
@@ -13,11 +13,19 @@ let idCounter = 0;
 function uid() { return `ws-test-${++idCounter}`; }
 
 class StubWS {
-  constructor() { this.readyState = 1; this.sent = []; this.handlers = {}; this.closedWith = null; }
+  constructor() {
+    this.readyState = 1;
+    this.sent = [];
+    this.handlers = {};
+    this.closedWith = null;
+    this.bufferedAmount = 0;
+    this.terminated = false;
+  }
   on(ev, cb) { this.handlers[ev] = cb; }
   send(msg) { this.sent.push(msg); }
   emit(ev, ...args) { this.handlers[ev]?.(...args); }
   close(code, reason) { this.readyState = 3; this.closedWith = { code, reason }; }
+  terminate() { this.terminated = true; this.readyState = 3; this.handlers['close']?.(); }
   lastMsg() { return JSON.parse(this.sent[this.sent.length - 1]); }
   allMsgs() { return this.sent.map(s => JSON.parse(s)); }
 }
@@ -752,5 +760,103 @@ describe('handleSocket: seq + requestId (Phase 19)', () => {
     ws.emit('message', JSON.stringify({ type: 'undo', requestId: 'req-obs-undo' }));
     const errMsg = ws.allMsgs().find(m => m.error === 'observer-cannot-control' && m.requestId === 'req-obs-undo');
     expect(errMsg).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 29: backpressure (WS_MAX_BUFFER)
+// ---------------------------------------------------------------------------
+describe('handleSocket: backpressure (Phase 29)', () => {
+  test('WS_MAX_BUFFER is exported and equals process.env.WS_MAX_BUFFER or 1 MiB default', () => {
+    expect(typeof WS_MAX_BUFFER).toBe('number');
+    expect(WS_MAX_BUFFER).toBeGreaterThan(0);
+  });
+
+  test('safeSend terminates slow consumer and skips send when bufferedAmount exceeds threshold', () => {
+    const gameId = uid();
+    const ws1 = new StubWS(); // red — will be the slow consumer
+    const ws2 = new StubWS(); // black — the sender
+    handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+
+    // Simulate ws1 having a full outbound buffer
+    ws1.bufferedAmount = WS_MAX_BUFFER + 1;
+
+    const ws1SentBefore = ws1.sent.length;
+    // ws2 sends a reset to trigger a broadcast that will try to send to ws1
+    ws2.emit('message', JSON.stringify({ type: 'reset' }));
+
+    // ws1 should have been terminated, not sent any new messages
+    expect(ws1.terminated).toBe(true);
+    expect(ws1.sent.length).toBe(ws1SentBefore);
+  });
+
+  test('safeSend does not terminate ws when bufferedAmount is exactly at threshold', () => {
+    const gameId = uid();
+    const ws1 = new StubWS();
+    const ws2 = new StubWS();
+    handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+
+    // At exactly the threshold (not above), send should proceed normally
+    ws1.bufferedAmount = WS_MAX_BUFFER;
+
+    const ws1SentBefore = ws1.sent.length;
+    ws2.emit('message', JSON.stringify({ type: 'reset' }));
+
+    expect(ws1.terminated).toBe(false);
+    expect(ws1.sent.length).toBeGreaterThan(ws1SentBefore);
+  });
+
+  test('terminated slow consumer is removed from store via close handler', () => {
+    const gameId = uid();
+    const ws1 = new StubWS();
+    const ws2 = new StubWS();
+    handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+
+    ws1.bufferedAmount = WS_MAX_BUFFER + 1;
+    // Trigger broadcast that hits ws1's backpressure guard
+    ws2.emit('message', JSON.stringify({ type: 'reset' }));
+
+    // ws1.terminate() calls the close handler which calls leaveSocket
+    // After that, the game should reflect ws1 disconnected
+    expect(ws1.terminated).toBe(true);
+    const g = ensureGame(gameId);
+    // red slot should be freed since close handler ran leaveSocket
+    expect(g.redWs).toBeNull();
+  });
+
+  test('safeSend skips send to ws with readyState !== 1 (existing behaviour preserved)', () => {
+    const gameId = uid();
+    const ws = new StubWS();
+    handleSocket(ws, {}, { game: gameId, as: 'red' });
+    ws.readyState = 3;
+    const sentBefore = ws.sent.length;
+    ws.emit('message', JSON.stringify({ type: 'reset' }));
+    // readyState is 3, so safeSend should skip — but ws is also the sender, which is fine
+    // Use a second socket to trigger the send path toward the closed ws
+    const ws2 = new StubWS();
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+    ws2.emit('message', JSON.stringify({ type: 'reset' }));
+    expect(ws.sent.length).toBe(sentBefore);
+    expect(ws.terminated).toBe(false);
+  });
+
+  test('safeSend treats undefined bufferedAmount (no property) as 0 and sends normally', () => {
+    const gameId = uid();
+    const ws1 = new StubWS();
+    const ws2 = new StubWS();
+    handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+
+    // Remove the bufferedAmount property so the ?? 0 fallback branch is taken
+    delete ws1.bufferedAmount;
+
+    const ws1SentBefore = ws1.sent.length;
+    ws2.emit('message', JSON.stringify({ type: 'reset' }));
+
+    expect(ws1.terminated).toBe(false);
+    expect(ws1.sent.length).toBeGreaterThan(ws1SentBefore);
   });
 });

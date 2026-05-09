@@ -9,7 +9,9 @@ const dev = process.env.NODE_ENV !== 'production';
 // Phase 17: 8 KiB is more than sufficient for {type, from, to, requestId} payloads
 const WS_MAX_PAYLOAD = Number(process.env.WS_MAX_PAYLOAD ?? 8 * 1024);
 
-export async function createApp({ port: portArg } = {}) {
+export const WS_HEARTBEAT_MS = Number(process.env.WS_HEARTBEAT_MS ?? 30000);
+
+export async function createApp({ port: portArg, heartbeatMs = WS_HEARTBEAT_MS } = {}) {
   const app = next({ dev });
   await app.prepare();
   const handle = app.getRequestHandler();
@@ -28,7 +30,17 @@ export async function createApp({ port: portArg } = {}) {
   /* v8 ignore next 1 */
   wss.on('error', () => {});
 
-  /* v8 ignore next 20 */
+  // Heartbeat interval: terminate unresponsive clients, ping live ones.
+  const heartbeatInterval = setInterval(() => {
+    for (const ws of wss.clients) {
+      if (!ws.isAlive) { ws.terminate(); continue; }
+      ws.isAlive = false;
+      ws.ping();
+    }
+  }, heartbeatMs);
+  wss.once('close', () => clearInterval(heartbeatInterval));
+
+  /* v8 ignore next 22 */
   // Upgrade handler — exercised by ws.test.js live WS connections (Phase 6);
   // not reachable from bootstrap unit tests which do not open WebSocket connections.
   server.on('upgrade', (req, socket, head) => {
@@ -45,6 +57,8 @@ export async function createApp({ port: portArg } = {}) {
         return;
       }
       wss.handleUpgrade(req, socket, head, (ws) => {
+        ws.isAlive = true;
+        ws.on('pong', () => { ws.isAlive = true; });
         handleSocket(ws, req, query);
       });
     } else {

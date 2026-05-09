@@ -13,6 +13,9 @@ import {
 const RATE_LIMIT_OPS = Number(process.env.WS_RATE_LIMIT_OPS ?? 10);
 const RATE_LIMIT_WINDOW_MS = Number(process.env.WS_RATE_LIMIT_WINDOW_MS ?? 5000);
 
+// Backpressure: terminate slow consumers when their outbound buffer exceeds 1 MiB
+export const WS_MAX_BUFFER = Number(process.env.WS_MAX_BUFFER ?? 1048576);
+
 const VALID_ROLES = new Set(['', 'red', 'black', 'observer']);
 
 const rateBuckets = new Map();
@@ -38,7 +41,12 @@ function consumeToken(ws) {
 }
 
 function safeSend(ws, payload) {
-  if (ws.readyState === 1) ws.send(JSON.stringify(payload));
+  if (ws.readyState !== 1) return;
+  if ((ws.bufferedAmount ?? 0) > WS_MAX_BUFFER) {
+    ws.terminate();
+    return;
+  }
+  ws.send(JSON.stringify(payload));
 }
 
 function broadcastAll(g, payload) {
