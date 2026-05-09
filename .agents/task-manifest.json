@@ -129,6 +129,21 @@
       "title": "Iterate on findings",
       "status": "recurring",
       "details": "Absorb every review/test finding as new spec entries and new manifest phases; re-enter loop. Terminates only when loop_termination conditions hold."
+    },
+    {
+      "id": 12,
+      "title": "Fix store.joinSocket idempotency (F-RVW-9d6491e-2)",
+      "status": "deferred",
+      "blocked_by": [4],
+      "spec_refs": ["F-RVW-9d6491e-2"],
+      "details": "Clear previous role membership for a socket before reassigning, or return the current role when the socket is already registered. Phase 4 should land first since server-impl touches adjacent code."
+    },
+    {
+      "id": 13,
+      "title": "Audit Next 15.1.6 advisory and upgrade (F-RVW-9d6491e-4)",
+      "status": "todo",
+      "spec_refs": ["F-RVW-9d6491e-4"],
+      "details": "Verify npm advisory for next@15.1.6; bump to patched release if available; regenerate package-lock.json."
     }
   ],
   "current_state": {
@@ -178,6 +193,13 @@
       "event": "server.js + wsHandler.js landed; F-015 done; F-013 in_progress; 18 wsHandler tests, 100% coverage on src/lib/wsHandler.js; server.js excluded from coverage pending Phase 5/6 createApp path",
       "commit": "c98f5ca",
       "owner": "server-impl"
+    },
+    {
+      "phase_id": 8,
+      "event": "Per-commit codex review on f1e1aae+9d6491e returned 1 block + 1 major + 1 minor + 1 note. Resolutions: block (FND-1) addressed by F-010/Phase 4; major (FND-2) → new spec F-RVW-9d6491e-2 + Phase 12 deferred behind Phase 4; minor (FND-3) already closed by Phases 2+3; note (FND-4) → new spec F-RVW-9d6491e-4 + Phase 13 ready.",
+      "source": "codex review (gpt-5.4-mini xhigh)",
+      "commits_reviewed": ["f1e1aae", "9d6491e"],
+      "new_phases": [12, 13]
     }
   ]
 }

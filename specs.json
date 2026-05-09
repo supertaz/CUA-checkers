@@ -61,7 +61,8 @@
       "id": "F-010",
       "title": "Convert app to Next.js (App Router) with custom Node server",
       "status": "in_progress",
-      "evidence": "package.json, next.config.mjs, jsconfig.json present; server.js TBD"
+      "evidence": "package.json, next.config.mjs, jsconfig.json present; server.js TBD",
+      "notes": "FND-COMMIT-9d6491e-1: package.json dev/start scripts reference server.js which did not yet exist at commit 9d6491e; addressed by Phase 4 (server-impl@cua-checkers, commit c98f5ca)."
     },
     {
       "id": "F-011",
@@ -171,14 +172,64 @@
       "title": "Sonnet team created via TeamCreate; orchestrator delegates all implementation; no opus implementation work",
       "status": "done",
       "evidence": "TeamCreate cua-checkers; sonnet teammates infra (Phase 1) and rules-tdd (Phase 2 spawned)"
+    },
+    {
+      "id": "F-RVW-9d6491e-2",
+      "title": "joinSocket idempotency: same WebSocket joining twice must not occupy multiple roles",
+      "status": "todo",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
+      "evidence_required": "store.js test asserting double-join returns existing role and does not duplicate membership"
+    },
+    {
+      "id": "F-RVW-9d6491e-4",
+      "title": "Verify Next 15.1.6 advisory and upgrade if patched release exists; regenerate lockfile",
+      "status": "todo",
+      "severity": "note"
     }
   ],
   "findings_log": [
     {
       "id": "F-019",
       "title": "Dead defensive branch in findCaptureSequences: captured.includes(capCoord) is unreachable",
-      "status": "todo",
-      "notes": "checkers.js line 64: captured pieces are nulled on nextBoard before recursing, so workBoard[mr][mc] === null (line 61 !mid check) fires first. The captured.includes guard is logically correct but structurally unreachable. Suppressed with v8 ignore comment. A future refactor could remove the guard or restructure the board-clone order to make it reachable. No functional impact."
+      "status": "done",
+      "notes": "checkers.js line 64: captured pieces are nulled on nextBoard before recursing, so workBoard[mr][mc] === null (line 61 !mid check) fires first. The captured.includes guard is logically correct but structurally unreachable. Suppressed with v8 ignore comment. A future refactor could remove the guard or restructure the board-clone order to make it reachable. No functional impact. Mitigation (v8 ignore) judged satisfactory: the guard is a correct defensive invariant, just not reachable by coverage instrumentation; no observable regression risk."
+    },
+    {
+      "id": "FND-COMMIT-9d6491e-1",
+      "severity": "block",
+      "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
+      "file": "package.json:7",
+      "problem": "dev/start scripts reference server.js, which did not exist at commit 9d6491e",
+      "fix": "Phase 4 (server-impl@cua-checkers) creates server.js; track as in_progress referencing F-010",
+      "resolution": "addressed-by-F-010"
+    },
+    {
+      "id": "FND-COMMIT-9d6491e-2",
+      "severity": "major",
+      "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
+      "file": "src/lib/store.js:56",
+      "problem": "joinSocket() is not idempotent: if the same WebSocket calls joinSocket twice it can occupy multiple roles simultaneously, blocking real players",
+      "fix": "Clear previous role membership for that socket before reassigning, OR return the current role when the socket is already registered",
+      "resolution": "new-spec F-RVW-9d6491e-2"
+    },
+    {
+      "id": "FND-COMMIT-9d6491e-3",
+      "severity": "minor",
+      "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
+      "file": "vitest.config.js:13",
+      "problem": "coverage gate could pass on smoke-only suite while engines remain untested",
+      "fix": "Phases 2 (a351afd) and 3 (22654af) removed the excludes for checkers.js and store.js, replacing the smoke gate with real unit tests",
+      "resolution": "already-addressed-by-Phase-2-3"
+    },
+    {
+      "id": "FND-COMMIT-9d6491e-4",
+      "severity": "note",
+      "source": "codex review (gpt-5.4-mini xhigh) of f1e1aae+9d6491e",
+      "file": "package-lock.json",
+      "problem": "npm metadata flags next@15.1.6 as security-vulnerable",
+      "fix": "Bump to patched release after verifying advisory; regenerate lockfile",
+      "resolution": "new-spec F-RVW-9d6491e-4"
     }
   ],
   "iterations": []
