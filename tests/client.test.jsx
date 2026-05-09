@@ -559,6 +559,31 @@ describe('WebSocket connection', () => {
     });
   });
 
+  it('uses wss:// scheme when page protocol is https:', async () => {
+    const origLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, protocol: 'https:', host: 'localhost:3000', search: '' },
+      writable: true,
+      configurable: true,
+    });
+    render(<CheckersClient />);
+    await act(async () => { await new Promise(r => setTimeout(r, 10)); });
+    const ws = MockWS.instances[MockWS.instances.length - 1];
+    expect(ws.url.startsWith('wss://')).toBe(true);
+    Object.defineProperty(window, 'location', {
+      value: origLocation,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it('uses ws:// scheme when page protocol is http:', async () => {
+    render(<CheckersClient />);
+    await act(async () => { await new Promise(r => setTimeout(r, 10)); });
+    const ws = MockWS.instances[MockWS.instances.length - 1];
+    expect(ws.url.startsWith('ws://')).toBe(true);
+  });
+
   it('updates presence on presence message', async () => {
     const { ws } = await renderWithHello('red');
     await act(async () => {

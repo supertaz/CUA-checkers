@@ -73,7 +73,8 @@ export default function CheckersClient() {
     const game = params.get('game') || 'default';
     const as = params.get('as') || '';
     const asParam = as ? `&as=${encodeURIComponent(as)}` : '';
-    const url = `ws://${window.location.host}/ws?game=${encodeURIComponent(game)}${asParam}`;
+    const wsScheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${wsScheme}//${window.location.host}/ws?game=${encodeURIComponent(game)}${asParam}`;
 
     const ws = new WebSocket(url);
     wsRef.current = ws;
