@@ -13,7 +13,6 @@ export default defineConfig({
       exclude: [
         'src/app/layout.js',
         'src/app/globals.css',
-        'src/lib/store.js',
       ],
       thresholds: {
         lines: 100,

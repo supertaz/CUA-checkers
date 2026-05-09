@@ -136,7 +136,8 @@
     {
       "id": "Q-203",
       "title": "Store unit tests: role assignment ordering, requested role honoring, observer fallback, disconnect frees role, attemptMove turn enforcement, undo/reset",
-      "status": "todo"
+      "status": "done",
+      "evidence": "tests/store.test.js (33 tests, 100% coverage)"
     },
     {
       "id": "Q-204",
