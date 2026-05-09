@@ -79,8 +79,8 @@
     {
       "id": "F-013",
       "title": "WebSocket /ws endpoint for browser↔server move passing and live state sync; supports query params game and as (red|black|observer)",
-      "status": "in_progress",
-      "evidence": "src/lib/wsHandler.js + server.js; full WS integration closes in Phase 6"
+      "status": "done",
+      "evidence": "tests/ws.test.js (17 integration tests against live server: hello+role, presence, observer, requested-role, move acceptance, wrong-turn rejection, observer-move rejection, reset gating, undo gating, unknown-msg, malformed-json, disconnection, game isolation, HTTP branch, non-/ws upgrade branch) — 100% coverage on server.js"
     },
     {
       "id": "F-014",
@@ -153,7 +153,8 @@
     {
       "id": "Q-205",
       "title": "WebSocket integration test: two clients connect, role assignment, move broadcast, presence updates",
-      "status": "todo"
+      "status": "done",
+      "evidence": "tests/ws.test.js (17 integration tests, 100% server.js coverage; covers all 13 required scenarios + HTTP + non-/ws upgrade branches)"
     },
     {
       "id": "Q-206",

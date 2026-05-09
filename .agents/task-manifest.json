@@ -116,7 +116,7 @@
         "F-015"
       ],
       "task_id": 3,
-      "evidence": "commit 22654af \u2014 tests/store.test.js (33 tests, 100% coverage on src/lib/store.js)"
+      "evidence": "commit 22654af — tests/store.test.js (33 tests, 100% coverage on src/lib/store.js)"
     },
     {
       "id": 4,
@@ -130,7 +130,7 @@
         "F-013",
         "F-015"
       ],
-      "evidence": "commit c98f5ca \u2014 server.js + src/lib/wsHandler.js; 18 tests, 100% coverage on wsHandler.js; F-015 done, F-013 in_progress"
+      "evidence": "commit c98f5ca — server.js + src/lib/wsHandler.js; 18 tests, 100% coverage on wsHandler.js; F-015 done, F-013 in_progress"
     },
     {
       "id": 5,
@@ -144,12 +144,12 @@
         "Q-204"
       ],
       "owner": "api-tdd@cua-checkers",
-      "evidence": "commit 3eae194 \u2014 tests/api.test.js (13 tests, 100% coverage on all 3 route files); F-012 and Q-204 done"
+      "evidence": "commit 3eae194 — tests/api.test.js (13 tests, 100% coverage on all 3 route files); F-012 and Q-204 done"
     },
     {
       "id": 6,
       "title": "TDD WebSocket protocol",
-      "status": "deferred",
+      "status": "done",
       "blocked_by": [
         4
       ],
@@ -157,7 +157,9 @@
         "F-013",
         "F-015",
         "Q-205"
-      ]
+      ],
+      "owner": "ws-tdd@cua-checkers",
+      "evidence": "TBD — commit SHA recorded after git commit"
     },
     {
       "id": 7,
@@ -217,7 +219,7 @@
         "F-RVW-9d6491e-2"
       ],
       "details": "Clear previous role membership for a socket before reassigning, or return the current role when the socket is already registered. Phase 4 should land first since server-impl touches adjacent code.",
-      "evidence": "commit 5e174b0 \u2014 store.js early-return on rolesByWs.has(ws); 5 new idempotency tests added to tests/store.test.js (38 total); store.js 100% coverage",
+      "evidence": "commit 5e174b0 — store.js early-return on rolesByWs.has(ws); 5 new idempotency tests added to tests/store.test.js (38 total); store.js 100% coverage",
       "owner": "joinsocket-fix@cua-checkers"
     },
     {
@@ -228,19 +230,20 @@
         "F-RVW-9d6491e-4"
       ],
       "details": "Verify npm advisory for next@15.1.6; bump to patched release if available; regenerate package-lock.json.",
-      "evidence": "next bumped 15.1.6 \u2192 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated; 108 tests 100% coverage; advisory counts: before critical:1/high:0/moderate:1/low:2, after critical:0/high:0/moderate:2/low:2 (remaining moderate = postcss XSS via Next bundled dep, fix requires Next 9.x downgrade \u2014 not applicable)"
+      "evidence": "next bumped 15.1.6 → 15.5.18; eslint-config-next bumped to match; package-lock.json regenerated; 108 tests 100% coverage; advisory counts: before critical:1/high:0/moderate:1/low:2, after critical:0/high:0/moderate:2/low:2 (remaining moderate = postcss XSS via Next bundled dep, fix requires Next 9.x downgrade — not applicable)"
     },
     {
       "id": 14,
       "title": "server.js: wire server.listen error handler so createApp rejects on EADDRINUSE/etc (F-RVW-c98f5ca-1)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
       "spec_refs": [
         "F-RVW-c98f5ca-1"
       ],
-      "details": "Replace single-listener listen Promise with server.once('error', reject) + server.once('listening', resolve) so port-in-use surfaces as a rejection instead of a hang."
+      "details": "Replace single-listener listen Promise with server.once('error', reject) + server.once('listening', resolve) so port-in-use surfaces as a rejection instead of a hang.",
+      "evidence": "tests/server.test.js (4 tests, 100% coverage on server.js); server.once('error', reject) + wss.close() on error wired in server.js"
     },
     {
       "id": 15,
@@ -252,19 +255,21 @@
       "spec_refs": [
         "F-RVW-c98f5ca-2"
       ],
-      "details": "Validate req.headers.origin against ALLOWED_ORIGINS env (defaulting to localhost in dev). Reject disallowed upgrades with 403 + socket.destroy. Combined with Phase 16 input validation."
+      "details": "Validate req.headers.origin against ALLOWED_ORIGINS env (defaulting to localhost in dev). Reject disallowed upgrades with 403 + socket.destroy. Combined with Phase 16 input validation.",
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
     },
     {
       "id": 16,
       "title": "server.js: graceful shutdown + unhandled rejection handling on CLI bootstrap (F-RVW-c98f5ca-3)",
-      "status": "todo",
+      "status": "done",
       "blocked_by": [
         4
       ],
       "spec_refs": [
         "F-RVW-c98f5ca-3"
       ],
-      "details": "Add .catch on createApp, install SIGTERM/SIGINT handlers that wss.close() then server.close() with a drain timeout."
+      "details": "Add .catch on createApp, install SIGTERM/SIGINT handlers that wss.close() then server.close() with a drain timeout.",
+      "evidence": "tests/server.test.js (4 tests, 100% coverage on server.js); SIGTERM/SIGINT handlers + .catch(err => process.exit(1)) wired in server.js CLI block"
     },
     {
       "id": 17,
@@ -276,7 +281,8 @@
       "spec_refs": [
         "F-RVW-c98f5ca-4"
       ],
-      "details": "Construct WebSocketServer with maxPayload (e.g. 8 KiB). Add per-socket token bucket on reset/undo to prevent broadcast flooding."
+      "details": "Construct WebSocketServer with maxPayload (e.g. 8 KiB). Add per-socket token bucket on reset/undo to prevent broadcast flooding.",
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
     },
     {
       "id": 18,
@@ -288,7 +294,8 @@
       "spec_refs": [
         "F-RVW-c98f5ca-5"
       ],
-      "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as \u2208 {red, black, observer} or treat as auto-assign."
+      "details": "Coerce array query params to first value or reject; restrict gameId to ^[A-Za-z0-9_-]{1,64}$; validate as ∈ {red, black, observer} or treat as auto-assign.",
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
     },
     {
       "id": 19,
@@ -300,7 +307,8 @@
       "spec_refs": [
         "F-RVW-c98f5ca-6"
       ],
-      "details": "Maintain monotonic seq on each game; include seq on every state/presence broadcast. Echo client-supplied requestId on success/error reply so clients can correlate inflight moves."
+      "details": "Maintain monotonic seq on each game; include seq on every state/presence broadcast. Echo client-supplied requestId on success/error reply so clients can correlate inflight moves.",
+      "notes": "Awaiting Phase 6 landing; will be tackled by a `ws-protocol-hardening` teammate post-Phase-6"
     },
     {
       "id": 20,
@@ -425,7 +433,7 @@
           "9d6491e"
         ],
         "kind": "per-commit",
-        "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
+        "note": "Spawned as a non-team background Agent — predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
     "last_landed_commit": "5e174b0"
@@ -461,7 +469,7 @@
     },
     {
       "phase_id": 8,
-      "event": "Per-commit codex review on f1e1aae+9d6491e returned 1 block + 1 major + 1 minor + 1 note. Resolutions: block (FND-1) addressed by F-010/Phase 4; major (FND-2) \u2192 new spec F-RVW-9d6491e-2 + Phase 12 deferred behind Phase 4; minor (FND-3) already closed by Phases 2+3; note (FND-4) \u2192 new spec F-RVW-9d6491e-4 + Phase 13 ready.",
+      "event": "Per-commit codex review on f1e1aae+9d6491e returned 1 block + 1 major + 1 minor + 1 note. Resolutions: block (FND-1) addressed by F-010/Phase 4; major (FND-2) → new spec F-RVW-9d6491e-2 + Phase 12 deferred behind Phase 4; minor (FND-3) already closed by Phases 2+3; note (FND-4) → new spec F-RVW-9d6491e-4 + Phase 13 ready.",
       "source": "codex review (gpt-5.4-mini xhigh)",
       "commits_reviewed": [
         "f1e1aae",
@@ -480,7 +488,7 @@
     },
     {
       "phase_id": 8,
-      "event": "Per-commit adversarial review of c98f5ca: 6 major + 4 minor + 3 note. Major findings (server.listen error wiring, CSWSH origin check, graceful shutdown, payload cap + rate limit, query.game/as validation, move/state seq+requestId) \u2192 new specs F-RVW-c98f5ca-1..6 + new manifest phases 14-19 (all blocked_by Phase 4). No block findings. F-RVW-9d6491e-2 (joinSocket idempotency) confirmed not affected by c98f5ca. Verdict: findings:6.",
+      "event": "Per-commit adversarial review of c98f5ca: 6 major + 4 minor + 3 note. Major findings (server.listen error wiring, CSWSH origin check, graceful shutdown, payload cap + rate limit, query.game/as validation, move/state seq+requestId) → new specs F-RVW-c98f5ca-1..6 + new manifest phases 14-19 (all blocked_by Phase 4). No block findings. F-RVW-9d6491e-2 (joinSocket idempotency) confirmed not affected by c98f5ca. Verdict: findings:6.",
       "source": "codex-reviewer-phase4 (gpt-5.4-mini xhigh per Phase 8 contract; performed inline because team Agent spawn was unavailable in the teammate context)",
       "commits_reviewed": [
         "c98f5ca"
@@ -496,7 +504,7 @@
     },
     {
       "phase_id": 13,
-      "event": "Next.js advisory audit complete: bumped next 15.1.6 \u2192 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1\u21920, high 0\u21920. 108 tests, 100% coverage. F-RVW-9d6491e-4 \u2192 done.",
+      "event": "Next.js advisory audit complete: bumped next 15.1.6 → 15.5.18 and eslint-config-next to match; package-lock.json regenerated. Critical advisory (GHSA-9qr9-h5gf-34mp, RCE) and high advisory (GHSA-67rr-84xm-4c7r, DoS) and auth bypass (GHSA-f82v-jwr5-mffw, critical) all cleared. npm audit: critical 1→0, high 0→0. 108 tests, 100% coverage. F-RVW-9d6491e-4 → done.",
       "owner": "security-audit@cua-checkers"
     },
     {
@@ -522,6 +530,11 @@
         26,
         27
       ]
+    },
+    {
+      "phase_id": 6,
+      "event": "WS integration tests landed; F-013 done; Q-205 done; 17 integration tests against live server; 100% coverage on server.js including HTTP handler and non-/ws upgrade branches; all 134 tests passing",
+      "owner": "ws-tdd@cua-checkers"
     }
   ]
 }

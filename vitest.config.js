@@ -4,17 +4,16 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    globalSetup: ['./tests/globalSetup.js'],
     setupFiles: ['./tests/setup.js'],
     include: ['tests/**/*.test.{js,jsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/**/*.{js,jsx}'],
+      include: ['src/**/*.{js,jsx}', 'server.js'],
       exclude: [
         'src/app/layout.js',
         'src/app/globals.css',
-        // TODO Phase 5/6: include via createApp coverage
-        '../server.js',
       ],
       thresholds: {
         lines: 100,

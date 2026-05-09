@@ -23,7 +23,7 @@
 - [x] Phase 3: TDD store (Q-203) — commit `22654af`
 - [x] Phase 4: server.js + src/lib/wsHandler.js — `server-impl@cua-checkers` (commit c98f5ca)
 - [x] Phase 5: TDD REST API routes (F-012, Q-204) — `api-tdd@cua-checkers` (commit 3eae194)
-- [⏸] Phase 6: TDD WebSocket protocol (F-013, F-015, Q-205) — blocked by Phase 4
+- [x] Phase 6: TDD WebSocket protocol (F-013, Q-205) — `ws-tdd@cua-checkers` (17 integration tests, 100% server.js coverage)
 - [⏸] Phase 7: Next.js client + role-color theming (F-014, F-016, F-017, F-018, Q-206) — blocked by Phase 6
 - [♻] Phase 8: per-commit codex adversarial review (R-300) — gpt-5.4-mini xhigh via `codex:codex-rescue` subagent
 - [♻] Phase 9: pre-push codex adversarial review (R-301) — gpt-5.5 high via `codex:codex-rescue` subagent
@@ -54,4 +54,4 @@
 
 ## Last landed commit
 
-`5e174b0` — joinSocket idempotency fix (Phase 12): 5 new tests (38 total in store.test.js), store.js 100% coverage, F-RVW-9d6491e-2 done.
+TBD — Phase 6 WS integration tests: 17 live-server tests, 100% server.js coverage, F-013 done, Q-205 done. SHA updated after commit.
