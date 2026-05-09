@@ -9,13 +9,13 @@
     "review_per_commit": {
       "model": "gpt-5.4-mini",
       "reasoning": "xhigh",
-      "via": "codex-rescue (codex CLI)",
+      "via": "codex plugin (codex:codex-rescue subagent ONLY; NOT codex CLI directly, NOT MCP server)",
       "scope": "diff of HEAD~1..HEAD"
     },
     "review_pre_push": {
       "model": "gpt-5.5",
       "reasoning": "high",
-      "via": "codex-rescue (codex CLI)",
+      "via": "codex plugin (codex:codex-rescue subagent ONLY; NOT codex CLI directly, NOT MCP server)",
       "scope": "all unpushed commits vs origin/main"
     },
     "findings_handling": "Every finding from any test/review becomes a new spec entry with status=todo. Loop continues until specs.json has zero todo|in_progress|review entries.",
