@@ -499,7 +499,7 @@
         "note": "Spawned as a non-team background Agent \u2014 predates the orchestrator's clarified rule that ALL parallel work is via team teammates. Future codex reviews will be spawned with team_name='cua-checkers'."
       }
     ],
-    "last_landed_commit": "PENDING",
+    "last_landed_commit": "ca98787",
     "last_landed_phase": 26
   },
   "history": [
@@ -661,7 +661,7 @@
       "phase_ids": [20, 21, 22, 23, 24, 25, 26],
       "event": "REST hardening Phases 20-26 landed: differentiated HTTP codes for /moves (403/409/422), validateGameId at all REST entry points, F-020+F-021 spec entries, DELETE broadcast+gated on gameExists, broadcast spy assertions in tests, history/gameOver/malformed-JSON/WS-asymmetry behavior tests, DELETE 404 for missing id. 256 tests, 100% statements/branches/functions/lines on all changed files.",
       "owner": "rest-hardening-recovery@cua-checkers",
-      "commit": "PENDING",
+      "commit": "ca98787",
       "new_specs": ["F-020", "F-021"]
     }
   ]
