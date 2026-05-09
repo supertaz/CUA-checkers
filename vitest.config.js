@@ -13,6 +13,9 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}', 'server.js'],
       exclude: [
         'src/app/layout.js',
+        // page.js is a Next.js Server Component — jsdom cannot render server components;
+        // excluded from coverage rather than adding a test that would give false confidence.
+        'src/app/page.js',
         'src/app/globals.css',
       ],
       thresholds: {

@@ -6,6 +6,9 @@ import { handleSocket } from './src/lib/wsHandler.js';
 
 const dev = process.env.NODE_ENV !== 'production';
 
+// Phase 17: 8 KiB is more than sufficient for {type, from, to, requestId} payloads
+const WS_MAX_PAYLOAD = Number(process.env.WS_MAX_PAYLOAD ?? 8 * 1024);
+
 export async function createApp({ port: portArg } = {}) {
   const app = next({ dev });
   await app.prepare();
@@ -18,14 +21,29 @@ export async function createApp({ port: portArg } = {}) {
     handle(req, res, parse(req.url, true));
   });
 
-  const wss = new WebSocketServer({ noServer: true });
+  const wss = new WebSocketServer({ noServer: true, maxPayload: WS_MAX_PAYLOAD });
 
-  /* v8 ignore next 12 */
+  // Suppress uncaught WS_ERR_UNSUPPORTED_MESSAGE_LENGTH; the ws library closes
+  // the socket with code 1009 automatically — the error event is informational only.
+  /* v8 ignore next 1 */
+  wss.on('error', () => {});
+
+  /* v8 ignore next 20 */
   // Upgrade handler — exercised by ws.test.js live WS connections (Phase 6);
   // not reachable from bootstrap unit tests which do not open WebSocket connections.
   server.on('upgrade', (req, socket, head) => {
     const { pathname, query } = parse(req.url, true);
     if (pathname === '/ws') {
+      // Phase 15: Origin allowlist — reject cross-site WS upgrade (CSWSH)
+      const origin = req.headers.origin;
+      const rawAllowed = process.env.ALLOWED_ORIGINS ?? `http://localhost:${server.address()?.port ?? portArg ?? 0}`;
+      const allowed = rawAllowed.split(',').map(s => s.trim());
+      const wildcardAllowed = allowed.includes('*');
+      if (!wildcardAllowed && (!origin || !allowed.includes(origin))) {
+        socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
+        socket.destroy();
+        return;
+      }
       wss.handleUpgrade(req, socket, head, (ws) => {
         handleSocket(ws, req, query);
       });

@@ -5,6 +5,12 @@ import {
   RED, BLACK,
 } from "./checkers.js";
 
+const GAMEID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+export function validateGameId(id) {
+  return typeof id === 'string' && GAMEID_RE.test(id);
+}
+
 const games = new Map();
 
 function freshGame(id) {
@@ -17,6 +23,7 @@ function freshGame(id) {
     redWs: null,
     blackWs: null,
     observers: new Set(),
+    seq: 0,
     createdAt: Date.now(),
   };
 }

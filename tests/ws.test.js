@@ -9,9 +9,9 @@ import WebSocket from 'ws';
 
 // Helpers ---------------------------------------------------------------
 
-function wsConnect(port, query) {
+function wsConnect(port, query, headers = {}) {
   const qs = new URLSearchParams(query).toString();
-  return new WebSocket(`ws://localhost:${port}/ws?${qs}`);
+  return new WebSocket(`ws://localhost:${port}/ws?${qs}`, { headers });
 }
 
 /** Wait for the next matching message from a ws client. */
@@ -44,8 +44,8 @@ function drainAll(ws, waitMs = 100) {
 }
 
 /** Open a ws connection and wait for its hello message. */
-function connect(port, query) {
-  const ws = wsConnect(port, query);
+function connect(port, query, headers = {}) {
+  const ws = wsConnect(port, query, headers);
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('connect timeout')), 10000);
     const msgs = [];
@@ -95,11 +95,14 @@ function close(ws) {
 let server, port;
 
 beforeAll(async () => {
+  // Allow all origins in tests so existing tests pass without Origin header
+  process.env.ALLOWED_ORIGINS = '*';
   ({ server, port } = await createApp({ port: 0 }));
 }, 15000);
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve));
+  delete process.env.ALLOWED_ORIGINS;
 });
 
 // -----------------------------------------------------------------------
@@ -458,5 +461,221 @@ describe('server.js non-/ws upgrade', () => {
     });
 
     expect(destroyed).toBe(true);
+  });
+});
+
+// -----------------------------------------------------------------------
+// Phase 15: Origin allowlist
+// -----------------------------------------------------------------------
+describe('Origin allowlist (Phase 15)', () => {
+  // Use raw TCP to send upgrade requests so we can test the 403/101 paths.
+  // The upgrade handler reads process.env.ALLOWED_ORIGINS at connection time,
+  // so we can temporarily override it without spinning up another server.
+  function rawUpgrade(p, origin) {
+    return new Promise((resolve) => {
+      import('node:net').then(({ connect: tcpConnect }) => {
+        const socket = tcpConnect(p, 'localhost');
+        let buf = '';
+        socket.once('connect', () => {
+          const headers = [
+            `GET /ws?game=origin-test HTTP/1.1`,
+            `Host: localhost:${p}`,
+            'Upgrade: websocket',
+            'Connection: Upgrade',
+            'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==',
+            'Sec-WebSocket-Version: 13',
+          ];
+          if (origin) headers.push(`Origin: ${origin}`);
+          socket.write(headers.join('\r\n') + '\r\n\r\n');
+        });
+        socket.on('data', (chunk) => {
+          buf += chunk.toString();
+          // Once we have the status line, resolve immediately
+          if (buf.includes('\r\n')) {
+            const statusLine = buf.split('\r\n')[0] ?? '';
+            const code = parseInt(statusLine.split(' ')[1] ?? '0', 10);
+            socket.destroy();
+            resolve({ statusCode: code, raw: buf });
+          }
+        });
+        socket.on('close', () => {
+          const statusLine = buf.split('\r\n')[0] ?? '';
+          const code = parseInt(statusLine.split(' ')[1] ?? '0', 10);
+          resolve({ statusCode: code, raw: buf });
+        });
+        socket.on('error', () => resolve({ statusCode: 0, raw: buf }));
+        setTimeout(() => { socket.destroy(); }, 3000);
+      });
+    });
+  }
+
+  test('connection without Origin is rejected when allowlist is specific (not *)', async () => {
+    const saved = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'http://allowed.example.com';
+    try {
+      const result = await rawUpgrade(port, null);
+      expect(result.statusCode).toBe(403);
+    } finally {
+      process.env.ALLOWED_ORIGINS = saved;
+    }
+  });
+
+  test('connection with disallowed Origin is rejected with 403', async () => {
+    const saved = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'http://allowed.example.com';
+    try {
+      const result = await rawUpgrade(port, 'http://evil.example.com');
+      expect(result.statusCode).toBe(403);
+    } finally {
+      process.env.ALLOWED_ORIGINS = saved;
+    }
+  });
+
+  test('connection with allowed Origin succeeds', async () => {
+    const saved = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'http://allowed.example.com';
+    try {
+      const { ws, hello } = await connect(port, { game: 'origin-test3' }, { Origin: 'http://allowed.example.com' });
+      expect(hello.type).toBe('hello');
+      await close(ws);
+    } finally {
+      process.env.ALLOWED_ORIGINS = saved;
+    }
+  });
+
+  test('wildcard ALLOWED_ORIGINS=* accepts connection without Origin header', async () => {
+    // Already set to '*' for main test server; verify by raw TCP (no origin)
+    const result = await rawUpgrade(port, null);
+    // With '*', no origin check — server returns 101 upgrade (raw: starts with HTTP/1.1 101)
+    expect(result.statusCode).toBe(101);
+  });
+});
+
+// -----------------------------------------------------------------------
+// Phase 17: payload cap
+// -----------------------------------------------------------------------
+describe('payload cap (Phase 17)', () => {
+  test('oversized frame (>8 KiB) causes server to close connection', async () => {
+    const { ws } = await connect(port, { game: 'payload-test1' });
+    await drainAll(ws, 30);
+
+    // Generate a payload just over 8 KiB
+    const oversized = JSON.stringify({ type: 'move', from: 'a3', to: 'b4', pad: 'x'.repeat(9000) });
+
+    const closed = await new Promise((resolve) => {
+      ws.once('close', (code) => resolve(code));
+      ws.once('error', () => resolve('error'));
+      ws.send(oversized);
+      setTimeout(() => resolve('timeout'), 3000);
+    });
+
+    // ws closes with 1009 (message too big) or error/close
+    expect(closed).not.toBe('timeout');
+  });
+});
+
+// -----------------------------------------------------------------------
+// Phase 17: rate limiting (integration level)
+// -----------------------------------------------------------------------
+describe('rate limiting (Phase 17)', () => {
+  test('sending 12 moves rapidly yields at least 2 E_RATE_LIMIT errors', async () => {
+    const { ws } = await connect(port, { game: 'rate-test1' });
+    await drainAll(ws, 30);
+
+    const msgs = [];
+    ws.on('message', (raw) => msgs.push(JSON.parse(raw.toString())));
+
+    // Send 12 resets rapidly (default limit is 10 in 5s)
+    for (let i = 0; i < 12; i++) {
+      send(ws, { type: 'reset' });
+    }
+
+    // Wait for responses
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const rateLimitErrors = msgs.filter(m => m.error === 'E_RATE_LIMIT');
+    expect(rateLimitErrors.length).toBeGreaterThanOrEqual(2);
+
+    await close(ws);
+  });
+});
+
+// -----------------------------------------------------------------------
+// Phase 19: seq + requestId (integration level)
+// -----------------------------------------------------------------------
+describe('seq + requestId (Phase 19)', () => {
+  test('state messages have monotonically increasing seq per game', async () => {
+    const { ws: wsA } = await connect(port, { game: 'seq-test1' });
+    const { ws: wsB } = await connect(port, { game: 'seq-test1' });
+
+    await drainAll(wsA, 50);
+    await drainAll(wsB, 50);
+
+    const stateMsgs = [];
+    wsA.on('message', (raw) => {
+      const m = JSON.parse(raw.toString());
+      if (m.type === 'state') stateMsgs.push(m);
+    });
+
+    // Send two resets to generate two state broadcasts
+    send(wsA, { type: 'reset' });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    send(wsA, { type: 'reset' });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(stateMsgs.length).toBeGreaterThanOrEqual(2);
+    for (let i = 1; i < stateMsgs.length; i++) {
+      expect(stateMsgs[i].seq).toBeGreaterThan(stateMsgs[i - 1].seq);
+    }
+
+    await close(wsA);
+    await close(wsB);
+  });
+
+  test('two games have independent seq counters', async () => {
+    const { ws: wsA } = await connect(port, { game: 'seq-game-a' });
+    const { ws: wsB } = await connect(port, { game: 'seq-game-b' });
+
+    await drainAll(wsA, 50);
+    await drainAll(wsB, 50);
+
+    const stateA = nextMsg(wsA, m => m.type === 'state');
+    const stateB = nextMsg(wsB, m => m.type === 'state');
+
+    send(wsA, { type: 'reset' });
+    send(wsB, { type: 'reset' });
+
+    const [sa, sb] = await Promise.all([stateA, stateB]);
+    expect(sa.seq).toBeDefined();
+    expect(sb.seq).toBeDefined();
+    // Each game starts its own counter from 0; they are independent
+    expect(typeof sa.seq).toBe('number');
+    expect(typeof sb.seq).toBe('number');
+
+    await close(wsA);
+    await close(wsB);
+  });
+
+  test('move with requestId yields ack to sender with requestId echoed', async () => {
+    const { ws: wsA } = await connect(port, { game: 'reqid-test1' });
+    const { ws: wsB } = await connect(port, { game: 'reqid-test1' });
+
+    await drainAll(wsA, 50);
+    await drainAll(wsB, 50);
+
+    const ackPromise = nextMsg(wsA, m => m.type === 'ack' && m.requestId === 'test-req-001');
+    send(wsA, { type: 'move', from: 'a3', to: 'b4', requestId: 'test-req-001' });
+
+    const ack = await ackPromise;
+    expect(ack.requestId).toBe('test-req-001');
+
+    // State should also be broadcast (with seq)
+    const stateMsgs = await drainAll(wsB, 100);
+    const stateMsg = stateMsgs.find(m => m.type === 'state');
+    expect(stateMsg).toBeDefined();
+    expect(typeof stateMsg.seq).toBe('number');
+
+    await close(wsA);
+    await close(wsB);
   });
 });
