@@ -55,6 +55,8 @@
 - `codex-reviewer-phase23@cua-checkers` (codex plugin, Phase 8 review of `a351afd`+`22654af`)
 - `infra@cua-checkers` (sonnet, idle since Phase 1)
 
+- [x] Phase 31: Drain Phase-4 minor backlog (F-RVW-c98f5ca-7/8/9/10/11/13) + stale flag flips (F-010, F-011, P-101) — `cleanup-minors@cua-checkers`
+
 ## Last landed commit
 
-`f644c5b` — Phase 29 (backpressure+heartbeat): WS_MAX_BUFFER safeSend guard + ping/pong heartbeat in createApp; 6 wsHandler unit tests + 3 ws integration tests; 100% coverage on server.js and wsHandler.js.
+`TBD` — Phase 31 (minor backlog): F-8 fix (joiner no longer receives duplicate presence); F-9/F-7/F-10/F-11/F-13 resolved; stale flags F-010/F-011/P-101 flipped to done; P-100/R-300/R-301 marked kind=recurring. 269 tests, 100% coverage.

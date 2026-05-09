@@ -66,15 +66,17 @@
     {
       "id": "F-010",
       "title": "Convert app to Next.js (App Router) with custom Node server",
-      "status": "in_progress",
-      "evidence": "package.json, next.config.mjs, jsconfig.json present; server.js TBD",
-      "notes": "FND-COMMIT-9d6491e-1: package.json dev/start scripts reference server.js which did not yet exist at commit 9d6491e; addressed by Phase 4 (server-impl@cua-checkers, commit c98f5ca)."
+      "status": "done",
+      "evidence": "server.js, package.json, next.config.mjs, src/app/page.js, src/app/layout.js, src/app/globals.css",
+      "notes": "FND-COMMIT-9d6491e-1: package.json dev/start scripts reference server.js which did not yet exist at commit 9d6491e; addressed by Phase 4 (server-impl@cua-checkers, commit c98f5ca).",
+      "resolution": "Verified: server.js + Next.js 15 App Router + custom WS server all landed in commit c98f5ca. package.json dev/start scripts reference server.js which exists."
     },
     {
       "id": "F-011",
       "title": "Server tracks all moves authoritatively (in-memory game store keyed by gameId)",
-      "status": "in_progress",
-      "evidence": "src/lib/store.js"
+      "status": "done",
+      "evidence": "src/lib/store.js, src/app/api/games/[id]/moves/route.js, src/lib/wsHandler.js",
+      "resolution": "Verified: src/lib/store.js implements attemptMove + history + snapshots + ensureGame keyed by gameId. REST routes and WS handler both route through store. Full coverage confirmed."
     },
     {
       "id": "F-012",
@@ -139,12 +141,15 @@
     {
       "id": "P-100",
       "title": "Spec file: specs.json maintained with status flags; loop until all entries reach done",
-      "status": "in_progress"
+      "status": "in_progress",
+      "kind": "recurring"
     },
     {
       "id": "P-101",
       "title": "Task manifest at .agents/task-manifest.md with phased plan",
-      "status": "todo"
+      "status": "done",
+      "resolution": "Verified: .agents/task-manifest.json (canonical) and .agents/task-manifest.md (mirror) both exist and are maintained.",
+      "evidence": ".agents/task-manifest.json, .agents/task-manifest.md"
     },
     {
       "id": "Q-200",
@@ -192,12 +197,14 @@
     {
       "id": "R-300",
       "title": "Per-commit adversarial review via codex-rescue with gpt-5.4-mini xhigh reasoning; findings logged into specs.json",
-      "status": "todo"
+      "status": "todo",
+      "kind": "recurring"
     },
     {
       "id": "R-301",
       "title": "Pre-push adversarial review via codex-rescue with gpt-5.5 high reasoning; findings logged into specs.json",
-      "status": "todo"
+      "status": "todo",
+      "kind": "recurring"
     },
     {
       "id": "O-400",
@@ -277,37 +284,46 @@
     {
       "id": "F-RVW-c98f5ca-7",
       "title": "Redundant ensureGame in handleSocket; closure-captures role at join time so future store-layer idempotency fixes won't propagate",
-      "status": "todo",
+      "status": "done",
       "severity": "minor",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "won't-fix: joinSocket is idempotent post-Phase-12; role re-keying does not happen during a connection's lifetime. The closure-captured role remains accurate for the socket's entire lifespan. The redundant ensureGame call is a minor inefficiency but not a correctness issue."
     },
     {
       "id": "F-RVW-c98f5ca-8",
       "title": "Joiner receives presence twice (embedded in hello.state.presence and as standalone broadcast)",
-      "status": "todo",
+      "status": "done",
       "severity": "minor",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "Fixed: join-presence broadcast now scoped to other sockets (not the joiner) via explicit loop in wsHandler.js. Regression tests added in wsHandler.test.js asserting joiner receives exactly one state-bearing message (hello only, no duplicate presence).",
+      "evidence": "src/lib/wsHandler.js (join-presence loop), tests/wsHandler.test.js (joiner no-duplicate tests)"
     },
     {
       "id": "F-RVW-c98f5ca-9",
       "title": "wsHandler test coverage missing for invalid query.as values (empty, whitespace, 'RED', 'x', null)",
-      "status": "todo",
+      "status": "done",
       "severity": "minor",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "Tests added for whitespace (as=\"  \") and null (as=null coerces to \"\", valid). Uppercase RED and x already covered by prior Phase 18 tests. Phase 18 validation confirmed: whitespace not in VALID_ROLES, rejected with E_INVALID_ROLE. null coerces via (?? \"\") to empty string which is valid (auto-assign). Tests in wsHandler.test.js.",
+      "evidence": "tests/wsHandler.test.js (as=whitespace, as=null tests)"
     },
     {
       "id": "F-RVW-c98f5ca-10",
       "title": "vitest.config.js exclude '../server.js' is dead config; coverage include glob 'src/**' never matches it",
-      "status": "todo",
+      "status": "done",
       "severity": "minor",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "Verified clean: vitest.config.js has no dead ../server.js exclude entry. server.js is positively included via the include glob. No stale TODO comment present. No changes needed.",
+      "evidence": "vitest.config.js"
     },
     {
       "id": "F-RVW-c98f5ca-11",
       "title": "Phase-6 ws integration tests must cover real-network edges: backpressure (ws.bufferedAmount), half-open (ping/pong), slow consumer",
-      "status": "todo",
+      "status": "done",
       "severity": "note",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "Covered by Phase 29 (F-RVW-batch1-3): tests/ws.test.js heartbeat suite covers ping/pong (server sends ping, unresponsive client terminated, responsive client kept alive) and backpressure covered in wsHandler.test.js Phase 29 suite (bufferedAmount > WS_MAX_BUFFER terminates slow consumer). All edges described in this finding are now tested.",
+      "evidence": "tests/ws.test.js (heartbeat Phase 29 suite, lines 686-784), tests/wsHandler.test.js (backpressure Phase 29 suite)"
     },
     {
       "id": "F-RVW-c98f5ca-12",
@@ -320,9 +336,11 @@
     {
       "id": "F-RVW-c98f5ca-13",
       "title": "CLI entry guard (process.argv[1] === new URL(import.meta.url).pathname) breaks under symlinks; consider es-main pattern",
-      "status": "todo",
+      "status": "done",
       "severity": "note",
-      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca"
+      "source": "codex review (gpt-5.4-mini xhigh) of c98f5ca",
+      "resolution": "Added clarifying comment in server.js documenting that the CLI entry guard is best-effort and may misfire under symlinks. The entire block is already wrapped in v8 ignore start/stop so testing is not applicable.",
+      "evidence": "server.js (CLI entry guard comment)"
     },
     {
       "id": "F-RVW-3eae194-1",

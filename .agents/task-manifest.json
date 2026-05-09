@@ -693,6 +693,22 @@
     {
       "event": "Phase 29 (WS backpressure + heartbeat, F-RVW-batch1-3) landed. WS_MAX_BUFFER backpressure guard in safeSend; ping/pong heartbeat in createApp; 6 wsHandler unit tests + 3 ws integration tests; 100% coverage on server.js and wsHandler.js.",
       "commit": "f644c5b"
+    },
+    {
+      "event": "Minor backlog drained (cleanup-minors@cua-checkers): F-010, F-011, P-101 stale flags flipped to done. P-100/R-300/R-301 marked kind=recurring. F-RVW-c98f5ca-8 fixed (joiner no longer receives duplicate presence on join; broadcast scoped to other sockets). F-RVW-c98f5ca-9 tests added (whitespace as= invalid, null as= coerces to valid empty string). F-RVW-c98f5ca-7 documented won't-fix (idempotent joinSocket). F-RVW-c98f5ca-10 verified clean (no dead config). F-RVW-c98f5ca-11 verified covered by Phase 29. F-RVW-c98f5ca-13 clarifying comment added in server.js. All 269 tests green, 100% coverage.",
+      "owner": "cleanup-minors@cua-checkers",
+      "specs_closed": [
+        "F-010",
+        "F-011",
+        "P-101",
+        "F-RVW-c98f5ca-7",
+        "F-RVW-c98f5ca-8",
+        "F-RVW-c98f5ca-9",
+        "F-RVW-c98f5ca-10",
+        "F-RVW-c98f5ca-11",
+        "F-RVW-c98f5ca-13"
+      ],
+      "commit": "TBD"
     }
   ]
 }

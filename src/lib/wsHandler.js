@@ -81,7 +81,11 @@ export function handleSocket(ws, req, query) {
   const g = ensureGame(gameId);
 
   safeSend(ws, { type: 'hello', gameId, role, state: fullPayload(g) });
-  broadcastAll(g, { type: 'presence', state: fullPayload(g) });
+  // Notify other sockets of the new presence; joiner already has state embedded in hello.
+  const presenceMsg = { type: 'presence', state: fullPayload(g), seq: g.seq++ };
+  for (const s of g.sockets) {
+    if (s !== ws) safeSend(s, presenceMsg);
+  }
 
   // Prevent uncaught exceptions from ws-level errors (e.g. WS_ERR_UNSUPPORTED_MESSAGE_LENGTH)
   ws.on('error', () => {});

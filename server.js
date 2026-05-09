@@ -97,6 +97,7 @@ export async function shutdown(signal, { server, wss }) {
 /* v8 ignore start */
 // CLI entry point — only runs when server.js is executed directly (node server.js),
 // not when imported by tests. Subprocess bootstrap is not exercised by the test suite.
+// Note: this guard is best-effort and may misfire under symlinks; use `node server.js` directly if in doubt.
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const port = Number(process.env.PORT) || 3000;
   createApp({ port })

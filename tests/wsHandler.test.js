@@ -78,6 +78,34 @@ describe('handleSocket: presence broadcast', () => {
     expect(presenceMsgs.length).toBeGreaterThanOrEqual(1);
   });
 
+  test('joiner receives exactly one initial state-bearing message (no duplicate presence)', () => {
+    const gameId = uid();
+    const ws = new StubWS();
+    handleSocket(ws, {}, { game: gameId, as: 'red' });
+    // The joiner should get exactly one hello (which embeds state) and NO standalone presence
+    const msgs = ws.allMsgs();
+    const helloMsgs = msgs.filter(m => m.type === 'hello');
+    const presenceMsgs = msgs.filter(m => m.type === 'presence');
+    expect(helloMsgs.length).toBe(1);
+    expect(presenceMsgs.length).toBe(0);
+  });
+
+  test('second joiner does not receive duplicate presence; first joiner receives exactly one', () => {
+    const gameId = uid();
+    const ws1 = new StubWS();
+    const ws2 = new StubWS();
+    handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    const ws1MsgsBefore = ws1.sent.length;
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
+    // ws2 (joiner) should NOT receive a standalone presence
+    const ws2PresenceMsgs = ws2.allMsgs().filter(m => m.type === 'presence');
+    expect(ws2PresenceMsgs.length).toBe(0);
+    // ws1 (existing) should receive exactly one presence for ws2's join
+    const ws1NewMsgs = ws1.allMsgs().slice(ws1MsgsBefore);
+    const ws1PresenceMsgs = ws1NewMsgs.filter(m => m.type === 'presence');
+    expect(ws1PresenceMsgs.length).toBe(1);
+  });
+
   test('broadcasts presence on close', () => {
     const gameId = uid();
     const ws1 = new StubWS();
@@ -404,6 +432,23 @@ describe('handleSocket: query validation (Phase 18)', () => {
     expect(ws.closedWith?.code).toBe(1008);
   });
 
+  test('as=whitespace sends E_INVALID_ROLE', () => {
+    const ws = new StubWS();
+    const gameId = uid();
+    handleSocket(ws, {}, { game: gameId, as: '  ' });
+    expect(ws.allMsgs().some(m => m.error === 'E_INVALID_ROLE')).toBe(true);
+    expect(ws.closedWith?.code).toBe(1008);
+  });
+
+  test('as=null coerces to empty string (valid observer-like role)', () => {
+    const ws = new StubWS();
+    const gameId = uid();
+    // null ?? '' = '' which is a valid role (auto-assign); no error expected
+    handleSocket(ws, {}, { game: gameId, as: null });
+    const hello = ws.allMsgs().find(m => m.type === 'hello');
+    expect(hello).toBeDefined();
+  });
+
   test('as=observer is valid', () => {
     const ws = new StubWS();
     const gameId = uid();
@@ -643,7 +688,10 @@ describe('handleSocket: seq + requestId (Phase 19)', () => {
   test('presence broadcasts also include seq', () => {
     const gameId = uid();
     const ws1 = new StubWS();
+    const ws2 = new StubWS();
     handleSocket(ws1, {}, { game: gameId, as: 'red' });
+    // ws2 joining triggers a presence broadcast to ws1 (existing socket)
+    handleSocket(ws2, {}, { game: gameId, as: 'black' });
     const presenceMsgs = ws1.allMsgs().filter(m => m.type === 'presence');
     expect(presenceMsgs.length).toBeGreaterThanOrEqual(1);
     expect(presenceMsgs[0].seq).toBeDefined();
