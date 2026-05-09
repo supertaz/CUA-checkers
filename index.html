@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CUA Checkers</title>
+<style>
+  :root {
+    --light-sq: #f0d9b5;
+    --dark-sq:  #5d4037;
+    --sel:      #ffeb3b;
+    --legal:    #4caf50;
+    --capture:  #e53935;
+    --red:      #c62828;
+    --red-edge: #7f1010;
+    --black:    #212121;
+    --black-edge: #000;
+    --bg:       #1a1a1a;
+    --panel:    #2a2a2a;
+    --text:     #f5f5f5;
+    --muted:    #aaa;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 16px;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: auto 360px;
+    gap: 24px;
+    padding: 24px;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 { margin: 0 0 8px 0; font-size: 22px; letter-spacing: 1px; }
+  .sub { color: var(--muted); margin-bottom: 16px; font-size: 13px; }
+
+  .board-wrap {
+    display: inline-block;
+    padding: 24px;
+    background: #111;
+    border-radius: 8px;
+    border: 2px solid #333;
+  }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, 64px);
+    grid-template-rows: repeat(8, 64px);
+    border: 4px solid #2c1810;
+    box-shadow: 0 0 0 2px #000;
+  }
+  .square {
+    position: relative;
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+    cursor: default;
+  }
+  .square.light { background: var(--light-sq); }
+  .square.dark  { background: var(--dark-sq); cursor: pointer; }
+  .square.selected::after {
+    content: ""; position: absolute; inset: 0;
+    box-shadow: inset 0 0 0 4px var(--sel);
+    pointer-events: none;
+  }
+  .square.legal-move::before {
+    content: ""; position: absolute;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--legal);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .square.legal-capture::before {
+    background: var(--capture);
+    width: 28px; height: 28px;
+  }
+  .square.last-from, .square.last-to {
+    box-shadow: inset 0 0 0 3px #03a9f4;
+  }
+
+  .coord {
+    position: absolute;
+    font-size: 10px;
+    color: rgba(0,0,0,0.55);
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .square.dark .coord { color: rgba(255,255,255,0.55); }
+  .coord.file { bottom: 2px; right: 4px; }
+  .coord.rank { top: 2px; left: 4px; }
+
+  .piece {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6),
+                inset 0 -3px 0 rgba(0,0,0,0.35),
+                inset 0 3px 0 rgba(255,255,255,0.15);
+    position: relative;
+    z-index: 1;
+  }
+  .piece.red   { background: var(--red);   border: 3px solid var(--red-edge); }
+  .piece.black { background: var(--black); border: 3px solid var(--black-edge); }
+  .piece.king::after {
+    content: "K";
+    color: gold;
+    text-shadow: 0 0 2px #000, 0 0 2px #000;
+  }
+
+  .panel {
+    background: var(--panel);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #444;
+  }
+  .panel + .panel { margin-top: 16px; }
+  .panel h2 { margin: 0 0 8px 0; font-size: 14px; letter-spacing: 1px; color: var(--muted); }
+
+  #status {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    background: #000;
+    border: 2px solid #444;
+  }
+  #status.red   { color: #ff8a80; border-color: var(--red); }
+  #status.black { color: #fff;    border-color: #888; }
+  #status.over  { color: gold; border-color: gold; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+  .stats div { background: #111; padding: 8px; border-radius: 4px; }
+  .stats span { color: var(--muted); display: block; font-size: 11px; }
+
+  button {
+    background: #444; color: var(--text); border: 1px solid #666;
+    padding: 8px 12px; border-radius: 4px; cursor: pointer;
+    font-family: inherit; font-size: 13px;
+  }
+  button:hover { background: #555; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  select {
+    background: #333; color: var(--text); border: 1px solid #555;
+    padding: 6px 8px; border-radius: 4px; font-family: inherit; width: 100%;
+  }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 6px 0 2px; }
+
+  #history {
+    max-height: 200px; overflow-y: auto;
+    background: #111; padding: 8px; border-radius: 4px;
+    font-size: 12px;
+  }
+  #history .move { padding: 2px 4px; border-bottom: 1px solid #222; }
+  #history .move:last-child { background: #1f3a1f; }
+  #history .move .num { color: var(--muted); display: inline-block; width: 30px; }
+
+  .legend { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  code { background: #111; padding: 2px 4px; border-radius: 3px; color: #80deea; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <h1>CUA CHECKERS</h1>
+    <div class="sub">Standard American checkers · 8×8 · forced captures · king promotion</div>
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Checkers board"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>STATUS</h2>
+      <div id="status" aria-live="polite">RED TO MOVE</div>
+      <div class="stats" style="margin-top:10px">
+        <div><span>RED PIECES</span><b id="red-count">12</b></div>
+        <div><span>BLACK PIECES</span><b id="black-count">12</b></div>
+        <div><span>RED KINGS</span><b id="red-kings">0</b></div>
+        <div><span>BLACK KINGS</span><b id="black-kings">0</b></div>
+        <div><span>MOVES</span><b id="move-count">0</b></div>
+        <div><span>TURN</span><b id="turn">RED</b></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>CONTROLS</h2>
+      <div class="btn-row">
+        <button id="reset">New Game</button>
+        <button id="undo">Undo</button>
+        <button id="copy-state">Copy State JSON</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>MOVE HISTORY</h2>
+      <div id="history"></div>
+    </div>
+
+    <div class="panel">
+      <h2>AGENT API</h2>
+      <div class="legend">
+        Coords: files <code>a..h</code> left→right, ranks <code>1..8</code> bottom→top.<br>
+        Red starts at ranks 1–3, Black at 6–8. Red moves up, Black moves down.<br><br>
+        DOM: each playable square has <code>id="sq-<i>file</i><i>rank</i>"</code>,
+        <code>data-square</code>, <code>data-piece</code>, <code>aria-label</code>.<br><br>
+        JS API on <code>window.checkers</code>:
+        <ul style="margin:4px 0; padding-left:18px;">
+          <li><code>getState()</code></li>
+          <li><code>getLegalMoves()</code></li>
+          <li><code>move("a3","b4")</code></li>
+          <li><code>moveSan("a3-b4")</code> or <code>"a3xc5"</code></li>
+          <li><code>reset()</code>, <code>undo()</code></li>
+          <li><code>onChange(fn)</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+(function () {
+  // ---------- board model ----------
+  // Internal grid: row 0 = rank 8 (top), row 7 = rank 1 (bottom).
+  // col 0 = file 'a', col 7 = file 'h'.
+  // Playable squares are dark squares: (row + col) % 2 === 1.
+  // RED moves up the visual board (toward rank 8 / row 0).
+  // BLACK moves down (toward rank 1 / row 7).
+
+  const FILES = ["a","b","c","d","e","f","g","h"];
+  const RED = "red", BLACK = "black";
+
+  function rcToCoord(r, c) { return FILES[c] + (8 - r); }
+  function coordToRC(coord) {
+    const f = coord.charCodeAt(0) - 97;
+    const rank = parseInt(coord.slice(1), 10);
+    return [8 - rank, f];
+  }
+  function inBounds(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+  function isDark(r, c) { return ((r + c) & 1) === 1; }
+
+  function cloneBoard(b) { return b.map(row => row.slice()); }
+  function makeInitialBoard() {
+    const b = Array.from({ length: 8 }, () => Array(8).fill(null));
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (!isDark(r, c)) continue;
+        if (r <= 2) b[r][c] = { color: BLACK, king: false };       // rows 0-2 = ranks 8,7,6
+        else if (r >= 5) b[r][c] = { color: RED, king: false };    // rows 5-7 = ranks 3,2,1
+      }
+    }
+    return b;
+  }
+
+  // ---------- rules ----------
+  function pieceDirs(piece) {
+    if (piece.king) return [[-1,-1],[-1,1],[1,-1],[1,1]];
+    return piece.color === RED ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
+  }
+
+  // Find all capture sequences from (r,c) for given piece on given board.
+  // Returns array of move objects: {from, to, path:[coords...], captured:[coords...], kinged:bool}.
+  function findCaptureSequences(board, r, c, piece) {
+    const results = [];
+    const dirs = pieceDirs(piece);
+
+    function recurse(curR, curC, curPiece, captured, path, workBoard) {
+      let extended = false;
+      for (const [dr, dc] of dirs) {
+        const mr = curR + dr, mc = curC + dc;
+        const lr = curR + 2*dr, lc = curC + 2*dc;
+        if (!inBounds(lr, lc)) continue;
+        const mid = workBoard[mr][mc];
+        if (!mid || mid.color === curPiece.color) continue;
+        if (workBoard[lr][lc]) continue;
+        // capture this piece
+        const capCoord = rcToCoord(mr, mc);
+        if (captured.includes(capCoord)) continue;
+        extended = true;
+        const nextBoard = cloneBoard(workBoard);
+        nextBoard[mr][mc] = null;
+        nextBoard[curR][curC] = null;
+        // promotion mid-jump stops further jumps in American rules
+        let promotedNow = false;
+        let landedPiece = { color: curPiece.color, king: curPiece.king };
+        if (!landedPiece.king) {
+          if (curPiece.color === RED && lr === 0) { landedPiece.king = true; promotedNow = true; }
+          if (curPiece.color === BLACK && lr === 7) { landedPiece.king = true; promotedNow = true; }
+        }
+        nextBoard[lr][lc] = landedPiece;
+        const newPath = path.concat([rcToCoord(lr, lc)]);
+        const newCaps = captured.concat([capCoord]);
+        // If just promoted, stop here per American rules.
+        if (promotedNow) {
+          results.push({
+            from: path[0],
+            to: rcToCoord(lr, lc),
+            path: newPath,
+            captured: newCaps,
+            kinged: true,
+            isCapture: true
+          });
+        } else {
+          // try to extend; if cannot extend, record terminal sequence
+          const before = results.length;
+          recurse(lr, lc, landedPiece, newCaps, newPath, nextBoard);
+          // if recursive call added nothing further, record this as terminal
+          // (we detect by seeing if any further extension occurred — handled below)
+          if (results.length === before) {
+            results.push({
+              from: path[0],
+              to: rcToCoord(lr, lc),
+              path: newPath,
+              captured: newCaps,
+              kinged: false,
+              isCapture: true
+            });
+          }
+        }
+      }
+      return extended;
+    }
+
+    recurse(r, c, piece, [], [rcToCoord(r,c)], board);
+    return results;
+  }
+
+  function findSimpleMoves(board, r, c, piece) {
+    const moves = [];
+    for (const [dr, dc] of pieceDirs(piece)) {
+      const nr = r + dr, nc = c + dc;
+      if (!inBounds(nr, nc)) continue;
+      if (board[nr][nc]) continue;
+      let kinged = false;
+      if (!piece.king) {
+        if (piece.color === RED && nr === 0) kinged = true;
+        if (piece.color === BLACK && nr === 7) kinged = true;
+      }
+      moves.push({
+        from: rcToCoord(r, c),
+        to: rcToCoord(nr, nc),
+        path: [rcToCoord(r,c), rcToCoord(nr,nc)],
+        captured: [],
+        kinged,
+        isCapture: false
+      });
+    }
+    return moves;
+  }
+
+  function legalMovesFor(state, color) {
+    const captures = [];
+    const simples = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = state.board[r][c];
+        if (!p || p.color !== color) continue;
+        captures.push(...findCaptureSequences(state.board, r, c, p));
+      }
+    }
+    if (captures.length > 0) {
+      // forced capture: only capture moves are legal.
+      // Standard American: any capture move is allowed (no longest-jump rule).
+      return captures;
+    }
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = state.board[r][c];
+        if (!p || p.color !== color) continue;
+        simples.push(...findSimpleMoves(state.board, r, c, p));
+      }
+    }
+    return simples;
+  }
+
+  // ---------- game state ----------
+  const game = {
+    board: makeInitialBoard(),
+    turn: RED,
+    moveNumber: 1,
+    history: [],   // {san, color, move}
+    snapshots: [], // for undo
+    selected: null,
+    legalForSelected: [],
+    lastMove: null,
+    over: false,
+    winner: null,
+    listeners: []
+  };
+
+  function snapshot() {
+    return {
+      board: cloneBoard(game.board),
+      turn: game.turn,
+      moveNumber: game.moveNumber,
+      history: game.history.slice(),
+      lastMove: game.lastMove,
+      over: game.over,
+      winner: game.winner
+    };
+  }
+  function restore(s) {
+    game.board = cloneBoard(s.board);
+    game.turn = s.turn;
+    game.moveNumber = s.moveNumber;
+    game.history = s.history.slice();
+    game.lastMove = s.lastMove;
+    game.over = s.over;
+    game.winner = s.winner;
+  }
+
+  function pieceCounts() {
+    let red = 0, black = 0, redK = 0, blackK = 0;
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+      const p = game.board[r][c];
+      if (!p) continue;
+      if (p.color === RED) { red++; if (p.king) redK++; }
+      else { black++; if (p.king) blackK++; }
+    }
+    return { red, black, redK, blackK };
+  }
+
+  function checkGameOver() {
+    const moves = legalMovesFor(game, game.turn);
+    if (moves.length === 0) {
+      game.over = true;
+      game.winner = game.turn === RED ? BLACK : RED;
+    }
+  }
+
+  function applyMove(move) {
+    game.snapshots.push(snapshot());
+    const [fr, fc] = coordToRC(move.from);
+    const [tr, tc] = coordToRC(move.to);
+    const piece = game.board[fr][fc];
+    game.board[fr][fc] = null;
+    for (const cap of move.captured) {
+      const [cr, cc] = coordToRC(cap);
+      game.board[cr][cc] = null;
+    }
+    let landed = { color: piece.color, king: piece.king };
+    if (!landed.king) {
+      if (landed.color === RED && tr === 0) landed.king = true;
+      if (landed.color === BLACK && tr === 7) landed.king = true;
+    }
+    game.board[tr][tc] = landed;
+
+    const sep = move.isCapture ? "x" : "-";
+    const san = move.path.join(sep);
+    game.history.push({ san, color: game.turn, move });
+    game.lastMove = { from: move.from, to: move.to, captured: move.captured };
+    game.turn = game.turn === RED ? BLACK : RED;
+    if (game.turn === RED) game.moveNumber++;
+    checkGameOver();
+    notify();
+  }
+
+  function tryMove(from, to) {
+    if (game.over) return { ok: false, error: "game-over" };
+    const moves = legalMovesFor(game, game.turn);
+    // exact match: same from+to. If multiple capture sequences share endpoints, prefer the longest.
+    const candidates = moves.filter(m => m.from === from && m.to === to);
+    if (candidates.length === 0) return { ok: false, error: "illegal-move" };
+    candidates.sort((a, b) => b.captured.length - a.captured.length);
+    applyMove(candidates[0]);
+    return { ok: true, move: candidates[0] };
+  }
+
+  function tryMoveSan(san) {
+    // Parse "a3-b4" or "a3xc5xe7"
+    const sep = san.includes("x") ? "x" : "-";
+    const parts = san.split(sep);
+    if (parts.length < 2) return { ok: false, error: "bad-san" };
+    const from = parts[0];
+    const to = parts[parts.length - 1];
+    return tryMove(from, to);
+  }
+
+  function reset() {
+    game.board = makeInitialBoard();
+    game.turn = RED;
+    game.moveNumber = 1;
+    game.history = [];
+    game.snapshots = [];
+    game.selected = null;
+    game.legalForSelected = [];
+    game.lastMove = null;
+    game.over = false;
+    game.winner = null;
+    notify();
+  }
+  function undo() {
+    if (game.snapshots.length === 0) return false;
+    const s = game.snapshots.pop();
+    restore(s);
+    game.selected = null;
+    game.legalForSelected = [];
+    notify();
+    return true;
+  }
+
+  function notify() {
+    render();
+    for (const fn of game.listeners) {
+      try { fn(getState()); } catch (e) { console.error(e); }
+    }
+  }
+
+  // ---------- public state ----------
+  function getState() {
+    const counts = pieceCounts();
+    const flat = {};
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+      const p = game.board[r][c];
+      if (p) flat[rcToCoord(r,c)] = (p.king ? p.color + "-king" : p.color);
+    }
+    return {
+      turn: game.turn,
+      moveNumber: game.moveNumber,
+      pieces: flat,
+      counts,
+      lastMove: game.lastMove,
+      legalMoves: legalMovesFor(game, game.turn).map(m => ({
+        from: m.from, to: m.to, path: m.path,
+        captured: m.captured, isCapture: m.isCapture, kinged: m.kinged
+      })),
+      history: game.history.map(h => ({ san: h.san, color: h.color })),
+      gameOver: game.over,
+      winner: game.winner
+    };
+  }
+
+  // ---------- rendering ----------
+  const boardEl = document.getElementById("board");
+  function render() {
+    boardEl.innerHTML = "";
+    const legalMoves = game.over ? [] : legalMovesFor(game, game.turn);
+    const selectedMoves = game.selected
+      ? legalMoves.filter(m => m.from === game.selected)
+      : [];
+
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const sq = document.createElement("div");
+        const coord = rcToCoord(r, c);
+        const dark = isDark(r, c);
+        sq.className = "square " + (dark ? "dark" : "light");
+        sq.id = "sq-" + coord;
+        sq.dataset.square = coord;
+        sq.dataset.row = r;
+        sq.dataset.col = c;
+        sq.setAttribute("role", "gridcell");
+
+        if (c === 0) {
+          const rk = document.createElement("span");
+          rk.className = "coord rank";
+          rk.textContent = 8 - r;
+          sq.appendChild(rk);
+        }
+        if (r === 7) {
+          const fl = document.createElement("span");
+          fl.className = "coord file";
+          fl.textContent = FILES[c];
+          sq.appendChild(fl);
+        }
+
+        const piece = game.board[r][c];
+        if (piece) {
+          const el = document.createElement("div");
+          el.className = "piece " + piece.color + (piece.king ? " king" : "");
+          el.dataset.color = piece.color;
+          el.dataset.king = piece.king ? "1" : "0";
+          sq.appendChild(el);
+          sq.dataset.piece = piece.king ? piece.color + "-king" : piece.color;
+        } else {
+          sq.dataset.piece = "empty";
+        }
+
+        if (game.selected === coord) sq.classList.add("selected");
+        const targetMove = selectedMoves.find(m => m.to === coord);
+        if (targetMove) {
+          sq.classList.add(targetMove.isCapture ? "legal-capture" : "legal-move");
+          sq.dataset.legalTarget = "1";
+        }
+        if (game.lastMove) {
+          if (game.lastMove.from === coord) sq.classList.add("last-from");
+          if (game.lastMove.to   === coord) sq.classList.add("last-to");
+        }
+
+        const desc = piece
+          ? `${coord} ${piece.color}${piece.king ? " king" : ""}`
+          : `${coord} empty`;
+        sq.setAttribute("aria-label", desc);
+        sq.title = desc;
+
+        if (dark) sq.addEventListener("click", () => onSquareClick(coord));
+        boardEl.appendChild(sq);
+      }
+    }
+
+    // status panel
+    const statusEl = document.getElementById("status");
+    statusEl.classList.remove("red", "black", "over");
+    if (game.over) {
+      statusEl.textContent = "GAME OVER · " + (game.winner || "draw").toUpperCase() + " WINS";
+      statusEl.classList.add("over");
+    } else {
+      statusEl.textContent = game.turn.toUpperCase() + " TO MOVE";
+      statusEl.classList.add(game.turn);
+    }
+    const c = pieceCounts();
+    document.getElementById("red-count").textContent = c.red;
+    document.getElementById("black-count").textContent = c.black;
+    document.getElementById("red-kings").textContent = c.redK;
+    document.getElementById("black-kings").textContent = c.blackK;
+    document.getElementById("move-count").textContent = game.moveNumber;
+    document.getElementById("turn").textContent = game.turn.toUpperCase();
+
+    const hist = document.getElementById("history");
+    hist.innerHTML = "";
+    let line = null;
+    game.history.forEach((h, i) => {
+      if (h.color === RED) {
+        line = document.createElement("div");
+        line.className = "move";
+        const num = document.createElement("span");
+        num.className = "num";
+        num.textContent = Math.floor(i/2) + 1 + ".";
+        line.appendChild(num);
+        const r = document.createElement("span");
+        r.textContent = h.san + " ";
+        r.style.color = "#ff8a80";
+        line.appendChild(r);
+        hist.appendChild(line);
+      } else {
+        const b = document.createElement("span");
+        b.textContent = h.san;
+        b.style.color = "#eee";
+        if (line) line.appendChild(b);
+        else {
+          line = document.createElement("div");
+          line.className = "move";
+          line.appendChild(b);
+          hist.appendChild(line);
+        }
+      }
+    });
+    hist.scrollTop = hist.scrollHeight;
+  }
+
+  function onSquareClick(coord) {
+    if (game.over) return;
+    const [r, c] = coordToRC(coord);
+    const piece = game.board[r][c];
+    const legal = legalMovesFor(game, game.turn);
+
+    // if a piece of current color clicked, select it
+    if (piece && piece.color === game.turn) {
+      const has = legal.some(m => m.from === coord);
+      if (has) {
+        game.selected = coord;
+        render();
+        return;
+      }
+    }
+    // otherwise treat as target
+    if (game.selected) {
+      const res = tryMove(game.selected, coord);
+      if (res.ok) {
+        game.selected = null;
+      } else {
+        // click empty/own square: clear selection
+        game.selected = null;
+        render();
+      }
+    }
+  }
+
+  // ---------- buttons ----------
+  document.getElementById("reset").addEventListener("click", reset);
+  document.getElementById("undo").addEventListener("click", undo);
+  document.getElementById("copy-state").addEventListener("click", () => {
+    const txt = JSON.stringify(getState(), null, 2);
+    navigator.clipboard.writeText(txt).catch(() => {});
+    const btn = document.getElementById("copy-state");
+    const orig = btn.textContent;
+    btn.textContent = "Copied";
+    setTimeout(() => btn.textContent = orig, 1000);
+  });
+
+  // ---------- public API ----------
+  window.checkers = {
+    getState,
+    getLegalMoves: () => legalMovesFor(game, game.turn),
+    move: (from, to) => tryMove(from, to),
+    moveSan: tryMoveSan,
+    select: (coord) => { onSquareClick(coord); },
+    reset,
+    undo,
+    onChange: (fn) => { if (typeof fn === "function") game.listeners.push(fn); },
+    // dev helpers
+    _board: () => cloneBoard(game.board),
+    _coords: { rcToCoord, coordToRC }
+  };
+
+  // initial render
+  render();
+})();
+</script>
+</body>
+</html>
