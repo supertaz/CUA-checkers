@@ -21,9 +21,9 @@ Source of truth: `specs.json`. This manifest tracks phase-level progress for the
 ## Phased plan
 
 - [x] Phase 0: scaffold seeds (package.json, next.config.mjs, jsconfig.json, src/lib/checkers.js, src/lib/store.js, .gitignore, legacy/ move) — commit `f1e1aae`
-- [>] Phase 1: dev infra (vitest + @vitest/coverage-v8 + jsdom + testing-library + supertest; coverage thresholds 100%) — sonnet teammate `infra@cua-checkers` (Task #1, in_progress). vitest.config.js, tests/setup.js, tests/smoke.test.js created; npm install / npm test pending.
-- [⏸] Phase 2: TDD rules engine (Q-202) — auto-spawn after Task #1 closes
-- [⏸] Phase 3: TDD store (Q-203) — auto-spawn after Task #1 closes (parallel with Phase 2)
+- [x] Phase 1: dev infra (vitest + @vitest/coverage-v8 + jsdom + testing-library + supertest; coverage thresholds 100%) — commit `9d6491e` by `infra@cua-checkers`. Q-200 done. checkers.js + store.js currently excluded from coverage; excludes removed in Phases 2 & 3.
+- [>] Phase 2: TDD rules engine (Q-202) — sonnet teammate `rules-tdd@cua-checkers` spawned for Task #2
+- [⏸] Phase 3: TDD store (Q-203) — serialized after Phase 2 (Task #3 blocked by #2 to avoid `vitest.config.js` conflict)
 - [⏸] Phase 4: server.js custom server with ws upgrade; src/lib/wsHandler.js — auto-spawn after Task #3 closes
 - [⏸] Phase 5: TDD REST API routes (F-012, Q-204) — auto-spawn after Task #4 closes
 - [⏸] Phase 6: TDD WebSocket protocol (F-013, F-015, Q-205) — auto-spawn after Task #4 closes (parallel with Phase 5)

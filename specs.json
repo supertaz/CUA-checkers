@@ -164,7 +164,8 @@
     {
       "id": "O-400",
       "title": "Sonnet team created via TeamCreate; orchestrator delegates all implementation; no opus implementation work",
-      "status": "todo"
+      "status": "done",
+      "evidence": "TeamCreate cua-checkers; sonnet teammates infra (Phase 1) and rules-tdd (Phase 2 spawned)"
     }
   ],
   "findings_log": [],
